@@ -147,29 +147,17 @@ namespace Ludos.Engine
             _tmxManager.CurrentMap.DrawLayer(_spriteBatch, 0, _camera.CameraBounds, 0f);
             //_spriteBatch.Draw(_playerTexture, _camera.VisualizeCordinates(_player.Bounds), Color.White);
 
-            #region Debug
-
-            _debugManager.DrawRectancgle(_spriteBatch, _player.Bounds, transparancy: 0.50f);
-            _debugManager.DrawRectancgle(_spriteBatch, _player.BottomDetectBounds, color: Color.Red, transparancy: 0.50f);
-            //_debugInfo.DrawRectancgle(_spriteBatch, _camera.MovementBounds, transparancy: 0.50f);
-            //_tmxManager.CurrentMap.DrawObjectLayer(_spriteBatch, 0, Utilities.Utilities.Round(_camera.CameraBounds), 0f);
-
-            _debugManager.DrawScaledContent(_spriteBatch);
-
-            #endregion
-
             foreach (var platform in _tmxManager.MovingPlatforms)
             {
-                var platPos = _camera.VisualizeCordinates(new Vector2(platform.Bounds.X, platform.Bounds.Y));
                 _debugManager.DrawRectancgle(_spriteBatch, platform.Bounds, Color.DarkBlue);
-                _debugManager.DrawRectancgle(_spriteBatch, platform.DetectionBounds, color: Color.Green);
             }
+
+            _debugManager.DrawScaledContent(_spriteBatch);
 
             _spriteBatch.End();
 
             _spriteBatch.Begin();
 
-            //_debugManager.DrawDebugInfo(gameTime, _spriteBatch, _player);
             _debugManager.DrawDebugPanel(_spriteBatch, gameTime);
 
             _spriteBatch.End();

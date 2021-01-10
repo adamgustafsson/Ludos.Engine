@@ -9,18 +9,19 @@ namespace Ludos.Engine.Utilities.Debug
 {
     public class DebugManager
     {
-        private FpsCounter _fpsCounter;
-        private SpriteFont _fpsFont;
-        private GraphicsDevice _graphicsDevice;
-        private InputManager _inputManager;
-        private Texture2D _debugPanel;
-        private Camera2D _camera;
-        private TMXManager _tmxManager;
-        private Player _player;
+        private readonly FpsCounter _fpsCounter;
+        private readonly SpriteFont _fpsFont;
+        private readonly GraphicsDevice _graphicsDevice;
+        private readonly InputManager _inputManager;
+        private readonly Texture2D _debugPanel;
+        private readonly Camera2D _camera;
+        private readonly TMXManager _tmxManager;
+        private readonly Player _player;
 
         private bool _drawCollision;
         private bool _drawCameraMovementBounds;
         private bool _drawDebugInfo = true;
+        private bool _drawPlayerCollision = true;
 
         public DebugManager(ContentManager content, GraphicsDevice graphicsDevice, InputManager inputManager, Camera2D camera, TMXManager tmxManager, Player player)
         {
@@ -59,12 +60,8 @@ namespace Ludos.Engine.Utilities.Debug
 
         public void DrawDebugInfo(GameTime gameTime, SpriteBatch spriteBatch, Player player)
         {
-
             var container = GenerateScreenRectangle(_graphicsDevice, 265, 180, Color.Black, 0.50f);
-            //spriteBatch.Draw(container, new Vector2(3,3), Color.White);
             spriteBatch.Draw(container, new Vector2(1651, 100), Color.White);
-
-
 
             _fpsCounter.DrawFps(spriteBatch, _fpsFont, new Vector2(1658f, 107f), Color.LightGray);
             spriteBatch.DrawString(_fpsFont, "__________________________________________", new Vector2(1661, 167f), Color.LightGray);
@@ -79,9 +76,11 @@ namespace Ludos.Engine.Utilities.Debug
         {
             spriteBatch.Draw(_debugPanel, new Vector2(1651, 5), null, Color.White, 0f, Vector2.Zero, 1, SpriteEffects.None, 0f);
 
+            var chkBoxMargin = 19;
             var showCollisionChkbox = new Rectangle(1884, 12, 19, 16);
-            var showCameraMovementBoundsChkbox = new Rectangle(1884, 31, 19, 16);
-            var showDebugInfoChkbox = new Rectangle(1884, 50, 19, 16);
+            var showCameraMovementBoundsChkbox = showCollisionChkbox.AdjustLocation(0, chkBoxMargin);
+            var showDebugInfoChkbox = showCameraMovementBoundsChkbox.AdjustLocation(0, chkBoxMargin);
+            var showPlayerCollisionChkbox = showDebugInfoChkbox.AdjustLocation(0, chkBoxMargin);
 
             if (_inputManager.DidGetTargetedByLeftClick(showCollisionChkbox))
                 _drawCollision = !_drawCollision;
@@ -91,6 +90,9 @@ namespace Ludos.Engine.Utilities.Debug
 
             if (_inputManager.DidGetTargetedByLeftClick(showDebugInfoChkbox))
                 _drawDebugInfo = !_drawDebugInfo;
+
+            if (_inputManager.DidGetTargetedByLeftClick(showPlayerCollisionChkbox))
+                _drawPlayerCollision = !_drawPlayerCollision;
 
             if (_drawDebugInfo)
             {
@@ -108,6 +110,11 @@ namespace Ludos.Engine.Utilities.Debug
                 DrawRectancgle(spriteBatch, showCollisionChkbox, Color.White, transparancy: 0.50f, visualize: false);
             }
 
+            if (_drawPlayerCollision)
+            {
+                DrawRectancgle(spriteBatch, showPlayerCollisionChkbox, Color.White, transparancy: 0.50f, visualize: false);
+            }
+
         }
 
         public void DrawScaledContent(SpriteBatch spriteBatch)
@@ -116,7 +123,21 @@ namespace Ludos.Engine.Utilities.Debug
                 DrawRectancgle(spriteBatch, _camera.MovementBounds, transparancy: 0.50f);
 
             if (_drawCollision)
+            {
                 _tmxManager.CurrentMap.DrawObjectLayer(spriteBatch, 0, Utilities.Round(_camera.CameraBounds), 0f);
+                
+                foreach (var platform in _tmxManager.MovingPlatforms)
+                {
+                    DrawRectancgle(spriteBatch, platform.DetectionBounds, color: Color.Green);
+                }
+            }
+
+
+            if (_drawPlayerCollision)
+            {
+                DrawRectancgle(spriteBatch, _player.Bounds, transparancy: 0.50f);
+                DrawRectancgle(spriteBatch, _player.BottomDetectBounds, color: Color.Red, transparancy: 0.50f);
+            }
         }
 
         private static Texture2D GenerateScreenRectangle(GraphicsDevice graphicsDevice, int recWidth, int recHeight, Color color, float transparency)
