@@ -3,23 +3,16 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30523.141
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ludos.Engine", "Ludos.Engine\Ludos.Engine.csproj", "{F2361EF0-3504-4800-8690-B8D55FA85F4D}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Ludos.Engine", "Ludos.Engine\Ludos.Engine.shproj", "{A0CDBD0E-3A41-42B7-9425-A838BC2C7383}"
 EndProject
 Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{F2361EF0-3504-4800-8690-B8D55FA85F4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F2361EF0-3504-4800-8690-B8D55FA85F4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F2361EF0-3504-4800-8690-B8D55FA85F4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F2361EF0-3504-4800-8690-B8D55FA85F4D}.Release|Any CPU.Build.0 = Release|Any CPU
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Ludos.Engine\Ludos.Engine.projitems*{a0cdbd0e-3a41-42b7-9425-a838bc2c7383}*SharedItemsImports = 13
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {89A8B45C-F8FC-4D26-A9D6-64C875551DD8}
+		SolutionGuid = {4DEAA6CE-9139-40B1-8901-5974F0BBC2C6}
 	EndGlobalSection
 EndGlobal

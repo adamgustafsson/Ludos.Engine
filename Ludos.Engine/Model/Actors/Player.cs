@@ -1,5 +1,5 @@
 ﻿using FuncWorks.XNA.XTiled;
-using Ludos.Engine.Utillities;
+using Ludos.Engine.Utilities;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using System;
@@ -109,7 +109,7 @@ namespace Ludos.Engine.Model
 
         private void CalculateCollision()
         {
-            var collisionRects = _tmxManager.GetObjectsInRegion(World.DefaultLayerInfo.GROUND_COLLISION, Utillities.Utilities.Round(Bounds));
+            var collisionRects = _tmxManager.GetObjectsInRegion(World.DefaultLayerInfo.GROUND_COLLISION, Utilities.Utilities.Round(Bounds));
 
             foreach (var collisionRect in collisionRects.Where(x => x.Polyline == null))
             {

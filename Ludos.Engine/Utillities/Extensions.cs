@@ -2,7 +2,7 @@
 using System;
 using System.Drawing;
 
-namespace Ludos.Engine.Utillities
+namespace Ludos.Engine.Utilities
 {
     static class Extensions
     {

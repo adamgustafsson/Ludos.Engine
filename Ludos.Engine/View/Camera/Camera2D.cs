@@ -1,15 +1,14 @@
 ﻿using Ludos.Engine.Model;
-using Ludos.Engine.Utillities;
+using Ludos.Engine.Utilities;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System.Drawing;
 
 namespace Ludos.Engine.View
 {
     public class Camera2D
     {
-        private RectangleF _cameraBounds;
-        private RectangleF _movementBounds;
+        private System.Drawing.RectangleF _cameraBounds;
+        private System.Drawing.RectangleF _movementBounds;
         private Viewport _viewPort;
         private Player _player;
         private readonly float _scale;
@@ -18,7 +17,7 @@ namespace Ludos.Engine.View
         public Camera2D(GraphicsDevice graphicsDevice, Player player, float cameraScale)
         {
             _viewPort = graphicsDevice.Viewport;
-            _cameraBounds = new RectangleF(graphicsDevice.Viewport.Bounds.X, graphicsDevice.Viewport.Bounds.Y, graphicsDevice.Viewport.Bounds.Width, graphicsDevice.Viewport.Bounds.Height);
+            _cameraBounds = new System.Drawing.RectangleF(graphicsDevice.Viewport.Bounds.X, graphicsDevice.Viewport.Bounds.Y, graphicsDevice.Viewport.Bounds.Width, graphicsDevice.Viewport.Bounds.Height);
             _player = player;
             _scale = cameraScale;
             SetupCameraBounds();
@@ -78,19 +77,36 @@ namespace Ludos.Engine.View
             var movementBoundsWidth = 75;
             var movementBoundsHeight = 200;
 
-            _movementBounds = new RectangleF(_player.Bounds.Center().X - (movementBoundsWidth / 2), cameraCenterVisualized.Y - 100, movementBoundsWidth, movementBoundsHeight);
+            _movementBounds = new System.Drawing.RectangleF(_player.Bounds.Center().X - (movementBoundsWidth / 2), cameraCenterVisualized.Y - 100, movementBoundsWidth, movementBoundsHeight);
         }
 
-        public RectangleF CameraBounds { get => _cameraBounds; set => _cameraBounds = value; }
-        public RectangleF MovementBounds { get => _movementBounds; set => _movementBounds = value; }
+        public System.Drawing.RectangleF CameraBounds { get => _cameraBounds; set => _cameraBounds = value; }
+        public System.Drawing.RectangleF MovementBounds { get => _movementBounds; set => _movementBounds = value; }
 
         public Vector2 VisualizeCordinates(Vector2 cordinates)
         {
             return new Vector2(cordinates.X - _cameraBounds.X, cordinates.Y - _cameraBounds.Y);
         }
-        public Vector2 VisualizeCordinates(RectangleF recF)
+        public Vector2 VisualizeCordinates(System.Drawing.RectangleF recF)
         {
             return new Vector2(recF.X - _cameraBounds.X, recF.Y - _cameraBounds.Y);
+        }
+        public Vector2 VisualizeCordinates(Rectangle rec)
+        {
+            return new Vector2(rec.X - _cameraBounds.X, rec.Y - _cameraBounds.Y);
+        }
+
+        public System.Drawing.RectangleF VisualizeRectangle(System.Drawing.RectangleF recF)
+        {
+            recF.X -= _cameraBounds.X;
+            recF.Y -= _cameraBounds.Y;
+            return recF;
+        }
+        public Rectangle VisualizeRectangle(Rectangle rec)
+        {
+            rec.X -= _cameraBounds.X.ToInt32();
+            rec.Y -= _cameraBounds.Y.ToInt32();
+            return rec;
         }
 
     }

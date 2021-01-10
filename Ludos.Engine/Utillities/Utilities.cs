@@ -1,8 +1,8 @@
 ﻿using System.Drawing;
 
-namespace Ludos.Engine.Utillities
+namespace Ludos.Engine.Utilities
 {
-    static class Utilities
+    public static class Utilities
     {
         public static Microsoft.Xna.Framework.Rectangle Round(RectangleF recF)
         {

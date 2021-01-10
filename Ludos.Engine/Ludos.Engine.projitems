@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>6efba8a9-a407-4029-bdd0-651d22a87386</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Ludos.Engine</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Controller\LudosEngineDemo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Model\Actors\Abilities\DoubleJump.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Model\Actors\Abilities\IAbility.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Model\Actors\Abilities\WallJump.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Model\Actors\Actor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Model\Actors\Player.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Model\World\DefaultLayerInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Model\World\MovingPlatform.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Model\World\TMXManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utillities\DebugUtilities\DebugManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utillities\DebugUtilities\FpsCounter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utillities\Extensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utillities\Objects\RectangleF.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utillities\Objects\SizeF.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utillities\Utilities.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\Camera\Camera2D.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\Managers\InputManager.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)Controller\" />
+  </ItemGroup>
+  <ItemGroup>
+    <MonoGameContentReference Include="$(MSBuildThisFileDirectory)Content\Content.mgcb" />
+    <None Include="$(MSBuildThisFileDirectory)Content\Content.mgcb" />
+    <None Include="$(MSBuildThisFileDirectory)Content\Fonts\File.spritefont" />
+    <None Include="$(MSBuildThisFileDirectory)Content\Fonts\Segoe.spritefont" />
+    <None Include="$(MSBuildThisFileDirectory)Content\Levels\Level1\map1.tmx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory)Content\Assets\bumper.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Assets\coin.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Assets\Debug\debugpanel.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Assets\enemy.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Assets\player.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Levels\Level1\TileImages\background.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Content\Levels\Level1\TileImages\tileset.png" />
+  </ItemGroup>
+</Project>
