@@ -27,5 +27,10 @@ namespace Ludos.Engine.Utilities
             rec.Offset(x, y);
             return rec;
         }
+
+        public static Color FromRgb(this Color color, int r, int g, int b)
+        {
+            return new Color(r, b, g, 255);
+        }
     }
 }

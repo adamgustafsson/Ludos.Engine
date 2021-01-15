@@ -21,7 +21,7 @@ namespace Ludos.Engine.Utilities.Debug
         private bool _drawCollision;
         private bool _drawCameraMovementBounds;
         private bool _drawDebugInfo = true;
-        private bool _drawPlayerCollision = true;
+        private bool _drawPlayerCollision;
 
         public DebugManager(ContentManager content, GraphicsDevice graphicsDevice, InputManager inputManager, Camera2D camera, TMXManager tmxManager, Player player)
         {
@@ -82,16 +82,16 @@ namespace Ludos.Engine.Utilities.Debug
             var showDebugInfoChkbox = showCameraMovementBoundsChkbox.AdjustLocation(0, chkBoxMargin);
             var showPlayerCollisionChkbox = showDebugInfoChkbox.AdjustLocation(0, chkBoxMargin);
 
-            if (_inputManager.DidGetTargetedByLeftClick(showCollisionChkbox))
+            if (_inputManager.LeftClicked(showCollisionChkbox))
                 _drawCollision = !_drawCollision;
 
-            if (_inputManager.DidGetTargetedByLeftClick(showCameraMovementBoundsChkbox))
+            if (_inputManager.LeftClicked(showCameraMovementBoundsChkbox))
                 _drawCameraMovementBounds = !_drawCameraMovementBounds;
 
-            if (_inputManager.DidGetTargetedByLeftClick(showDebugInfoChkbox))
+            if (_inputManager.LeftClicked(showDebugInfoChkbox))
                 _drawDebugInfo = !_drawDebugInfo;
 
-            if (_inputManager.DidGetTargetedByLeftClick(showPlayerCollisionChkbox))
+            if (_inputManager.LeftClicked(showPlayerCollisionChkbox))
                 _drawPlayerCollision = !_drawPlayerCollision;
 
             if (_drawDebugInfo)

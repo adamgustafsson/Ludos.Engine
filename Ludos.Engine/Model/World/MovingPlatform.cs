@@ -1,39 +1,35 @@
 ﻿using FuncWorks.XNA.XTiled;
 using Microsoft.Xna.Framework;
-using System;
+using SD = System.Drawing;
 
 namespace Ludos.Engine.Model.World
 {
     public class MovingPlatform
     {
-        public System.Drawing.RectangleF DetectionBounds { get { return _detectionBounds; } }
-        public System.Drawing.RectangleF Bounds { get { return _platform; } }
-        public System.Drawing.PointF Change {get { return _change; } }
+        public SD.RectangleF DetectionBounds { get { return _detectionBounds; } }
+        public SD.RectangleF Bounds { get { return _platform; } }
+        public SD.PointF Change {get { return _change; } }
 
         private Polyline _path;
         private int _currentLine;
         private int _direction;
         private Vector2 _position;
-        private System.Drawing.PointF _change;
-        private System.Drawing.RectangleF _platform;
-        private System.Drawing.RectangleF _detectionBounds;
+        private SD.PointF _change;
+        private SD.RectangleF _platform;
+        private SD.RectangleF _detectionBounds;
 
         public MovingPlatform(Polyline polylinePath, Point size)
         {
             _path = polylinePath;
             _direction = 1;
             _currentLine = 0;
-            _change = new System.Drawing.PointF(0, 0);
+            _change = new SD.PointF(0, 0);
             _position = new Vector2(polylinePath.Bounds.X, polylinePath.Bounds.Y);
-            _platform = new System.Drawing.RectangleF(_position.X, _position.Y, size.X, size.Y);
+            _platform = new SD.RectangleF(_position.X, _position.Y, size.X, size.Y);
         }
 
         public void Update(float a_elapsedTime)
         {
-
-            var currentLineLength = _path.Lines[_currentLine].Length - _platform.Width;
-
-
             if (Vector2.Distance(_path.Lines[_currentLine].Start, _position) > _path.Lines[_currentLine].Length)
             {
                 if (_currentLine + 1 < _path.Lines.Length)
@@ -72,8 +68,7 @@ namespace Ludos.Engine.Model.World
             _platform.X = _position.X;
             _platform.Y = _position.Y;
 
-            _detectionBounds = new System.Drawing.RectangleF(_platform.X, _platform.Y, _platform.Width, _platform.Height * 0.13f);
-
+            _detectionBounds = new SD.RectangleF(_platform.X, _platform.Y, _platform.Width, _platform.Height * 0.13f);
         }
     }
 }
