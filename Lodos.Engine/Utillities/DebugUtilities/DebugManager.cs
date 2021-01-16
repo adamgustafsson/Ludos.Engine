@@ -1,6 +1,7 @@
-﻿using Ludos.Engine.Model;
-using Ludos.Engine.Model.World;
-using Ludos.Engine.View;
+﻿using Ludos.Engine.Graphics;
+using Ludos.Engine.Managers;
+using Ludos.Engine.Model;
+using Ludos.Engine.Model.Managers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;

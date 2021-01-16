@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Ludos.Engine.View
+namespace Ludos.Engine.Graphics
 {
     public abstract class GUIComponent
     {

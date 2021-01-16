@@ -1,4 +1,5 @@
 ﻿using FuncWorks.XNA.XTiled;
+using Ludos.Engine.Model.Managers;
 using Ludos.Engine.Utilities;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
@@ -11,7 +12,7 @@ namespace Ludos.Engine.Model
 {
     public class Player : Actor
     {
-        private World.TMXManager _tmxManager;
+        private TMXManager _tmxManager;
         private RectangleF _lastPosition;
         
         private bool _onGround;
@@ -27,7 +28,7 @@ namespace Ludos.Engine.Model
 
         private bool _onMovingPlatform;
 
-        public Player(PointF startLocation, World.TMXManager tmxManager, SizeF playerSize)
+        public Player(PointF startLocation, TMXManager tmxManager, Size playerSize)
         {
             Gravity = 600;
             Bounds = new RectangleF(startLocation, playerSize);
@@ -39,11 +40,11 @@ namespace Ludos.Engine.Model
             //GetAbility<DoubleJump>().AbilityEnabled = false;
         }
 
-        public void Update(float elapsedTime, KeyboardState keyboardState)
+        public void Update(float elapsedTime)
         {
             _lastPosition = Bounds;
 
-            var direction = GetDirection(keyboardState);
+            var direction = GetDirection(Keyboard.GetState());
             Accelerate(ref direction);
             Velocity = CalculateMoveVelocity(Velocity, direction, Speed, elapsedTime);
            

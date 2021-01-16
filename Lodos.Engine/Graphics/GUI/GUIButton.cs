@@ -1,9 +1,10 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Ludos.Engine.Managers;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using SD = System.Drawing;
 
-namespace Ludos.Engine.View
+namespace Ludos.Engine.Graphics
 {
     public abstract class GUIButton : GUIComponent
     {
@@ -18,7 +19,6 @@ namespace Ludos.Engine.View
         public Vector2 Position { get; set; }
         public string Text { get; set; }
         public bool UseFontShading { get; set; }
-        public int Scale { get; set; }
         public Rectangle Rectangle
         {
             get { return new Rectangle((int)Position.X, (int)Position.Y, _size.Width, _size.Height); }
@@ -26,9 +26,9 @@ namespace Ludos.Engine.View
 
         public override void Update(GameTime gameTime)
         {
-            _isHovering = _inputMangager.IsHovering(Rectangle, scale: Scale);
+            _isHovering = _inputMangager.IsHovering(Rectangle);
 
-            if (_inputMangager.LeftClicked(Rectangle, scale: Scale))
+            if (_inputMangager.LeftClicked(Rectangle))
                 Click?.Invoke(this, new EventArgs());
         }
     }

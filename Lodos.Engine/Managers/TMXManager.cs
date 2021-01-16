@@ -1,20 +1,21 @@
 ﻿using FuncWorks.XNA.XTiled;
+using Ludos.Engine.Model.World;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Ludos.Engine.Model.World
+namespace Ludos.Engine.Model.Managers
 {
     public class TMXManager
     {
-
         public Map CurrentMap { get => _maps [_currentLevelIndex]; }
+        public List<MovingPlatform> MovingPlatforms { get; private set; } = new List<MovingPlatform>();
+
         private int _currentLevelIndex;
-        private List<Map> _maps;
-        private List<TmxMapInfo> _mapsInfo;
+        private readonly List<Map> _maps;
+        private readonly List<TmxMapInfo> _mapsInfo;
         private Dictionary<string, int> _layerIndexInfo;
-        public List<MovingPlatform> MovingPlatforms = new List<MovingPlatform>();
 
         public TMXManager(ContentManager content, List<TmxMapInfo> mapsInfo)
         {
@@ -39,7 +40,7 @@ namespace Ludos.Engine.Model.World
             AssignObjectLayers();
         }
 
-        public void Update(GameTime gameTime, System.Drawing.RectangleF cameraBounds)
+        public void Update(GameTime gameTime)
         {
             foreach (var movingPlatform in MovingPlatforms)
             {
@@ -52,7 +53,7 @@ namespace Ludos.Engine.Model.World
             return _layerIndexInfo[layerName];
         }
 
-        public IEnumerable<MapObject> GetObjectsInRegion(string layerName, System.Drawing.RectangleF region, KeyValuePair<string, string>? property = null)
+        public IEnumerable<MapObject> GetObjectsInRegion(string layerName, System.Drawing.RectangleF region)
         {
             return CurrentMap.GetObjectsInRegion(_layerIndexInfo[layerName], region);
         }

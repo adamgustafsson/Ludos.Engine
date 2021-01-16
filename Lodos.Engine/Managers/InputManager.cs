@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using SD = System.Drawing;
 
-namespace Ludos.Engine.View
+namespace Ludos.Engine.Managers
 {
     public class InputManager
     {
@@ -45,15 +45,15 @@ namespace Ludos.Engine.View
             _clientBounds = clientBounds;
         }
 
-        public bool IsHovering(Rectangle target, int scale = 1)
+        public bool IsHovering(Rectangle target)
         {
             var mousePosition = GetMousePosition();
-            return target.Intersects(new Rectangle(mousePosition.X / scale, mousePosition.Y / scale, 1, 1));
+            return target.Intersects(new Rectangle(mousePosition.X / States.LudosGame.GraphicsScale, mousePosition.Y / States.LudosGame.GraphicsScale, 1, 1));
         }
 
-        public bool LeftClicked(Rectangle target, int scale = 1)
+        public bool LeftClicked(Rectangle target)
         {
-            return IsHovering(target, scale) && _prevMoseState.LeftButton == ButtonState.Pressed && _mouseState.LeftButton == ButtonState.Released;
+            return IsHovering(target) && _prevMoseState.LeftButton == ButtonState.Pressed && _mouseState.LeftButton == ButtonState.Released;
         }
     }
 }

@@ -1,9 +1,11 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Ludos.Engine.Managers;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 
-namespace Ludos.Engine.View
+namespace Ludos.Engine.Graphics
 {
-    public class Button : GUIButton
+    public class Button : GUIButton, ICloneable
     {
         private readonly Texture2D[] _textures;
 
@@ -41,6 +43,10 @@ namespace Ludos.Engine.View
 
                 spriteBatch.DrawString(_font, Text, new Vector2(x, y), TextColor);
             }
+        }
+        public object Clone()
+        {
+            return this.MemberwiseClone() as Button;
         }
     }
 }

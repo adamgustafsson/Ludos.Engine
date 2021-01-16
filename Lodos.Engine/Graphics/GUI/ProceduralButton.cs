@@ -1,9 +1,11 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Ludos.Engine.Managers;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 
-namespace Ludos.Engine.View
+namespace Ludos.Engine.Graphics
 {
-    public class ButtonRT : GUIButton
+    public class ProceduralButton : GUIButton, ICloneable
     {
         private readonly GraphicsDevice _graphicsDevice;
         public Color ButtonColor { get; set; }
@@ -11,7 +13,7 @@ namespace Ludos.Engine.View
         public int BorderWidth { get; set; } = 0;
         public float Transparancy { get; set; } = 1;
 
-        public ButtonRT(GraphicsDevice graphicsDevice, SpriteFont font, InputManager inputManager, Rectangle area)
+        public ProceduralButton(GraphicsDevice graphicsDevice, SpriteFont font, InputManager inputManager, Rectangle area)
         {
             _graphicsDevice = graphicsDevice;
             _font = font;
@@ -56,6 +58,11 @@ namespace Ludos.Engine.View
             }
 
             spriteBatch.DrawString(_font, Text, new Vector2(posX, posY), TextColor);
+        }
+
+        public object Clone()
+        {
+            return this.MemberwiseClone() as ProceduralButton;
         }
 
         private static Texture2D CreateTexture2D(GraphicsDevice graphicsDevice, Point size, Color color, float transparency)

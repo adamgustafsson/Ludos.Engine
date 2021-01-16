@@ -3,7 +3,7 @@ using Ludos.Engine.Utilities;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Ludos.Engine.View
+namespace Ludos.Engine.Graphics
 {
     public class Camera2D
     {
