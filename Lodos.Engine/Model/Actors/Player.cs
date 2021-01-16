@@ -27,10 +27,10 @@ namespace Ludos.Engine.Model
 
         private bool _onMovingPlatform;
 
-        public Player(PointF startLocation, World.TMXManager tmxManager)
+        public Player(PointF startLocation, World.TMXManager tmxManager, SizeF playerSize)
         {
             Gravity = 600;
-            Bounds = new RectangleF(startLocation, new SizeF(16, 24));
+            Bounds = new RectangleF(startLocation, playerSize);
             Velocity = new Vector2(0, 0);
             Speed = new Vector2(10, Bounds.Y > 16 ? 225 : 200);
             _tmxManager = tmxManager;
@@ -109,9 +109,9 @@ namespace Ludos.Engine.Model
 
         private void CalculateCollision()
         {
-            var collisionRects = _tmxManager.GetObjectsInRegion(World.DefaultLayerInfo.GROUND_COLLISION, Utilities.Utilities.Round(Bounds));
+            var collisionRects = _tmxManager.GetObjectsInRegion(World.DefaultLayerInfo.GROUND_COLLISION, Utilities.Utilities.Round(Bounds)).Where(x => x.Type != "platform");
 
-            foreach (var collisionRect in collisionRects.Where(x => x.Polyline == null))
+            foreach (var collisionRect in collisionRects)
             {
                 var isGroundCollision = _lastPosition.Bottom.ToInt32() <= collisionRect.Bounds.Top && Bounds.Bottom.ToInt32() >= collisionRect.Bounds.Top;
                 var isRoofCollision = _lastPosition.Top.ToInt32() >= collisionRect.Bounds.Bottom && Bounds.Top.ToInt32() < collisionRect.Bounds.Bottom;
@@ -195,7 +195,7 @@ namespace Ludos.Engine.Model
                 }
             }
 
-            var ladders = _tmxManager.GetObjectsInRegion(World.DefaultLayerInfo.INTERACTABLE_OBJECTS, ladderDetectionBounds, new KeyValuePair<string, string>("type", "ladder"));
+            var ladders = _tmxManager.GetObjectsInRegion(World.DefaultLayerInfo.INTERACTABLE_OBJECTS, ladderDetectionBounds).Where(x => x.Type == "ladder");
             _ladderIsAvailable = ladders.Any();
 
             if (!_ladderIsAvailable)
