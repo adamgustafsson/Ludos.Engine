@@ -45,15 +45,15 @@ namespace Ludos.Engine.Managers
             _clientBounds = clientBounds;
         }
 
-        public bool IsHovering(Rectangle target)
+        public bool IsHovering(Rectangle target, int scale = 1)
         {
             var mousePosition = GetMousePosition();
-            return target.Intersects(new Rectangle(mousePosition.X / States.LudosGame.GraphicsScale, mousePosition.Y / States.LudosGame.GraphicsScale, 1, 1));
+            return target.Intersects(new Rectangle(mousePosition.X / scale, mousePosition.Y / scale, 1, 1));
         }
 
-        public bool LeftClicked(Rectangle target)
-        {
-            return IsHovering(target) && _prevMoseState.LeftButton == ButtonState.Pressed && _mouseState.LeftButton == ButtonState.Released;
+        public bool LeftClicked(Rectangle target, int scale = 1)
+        {  
+            return IsHovering(target, scale) && _prevMoseState.LeftButton == ButtonState.Pressed && _mouseState.LeftButton == ButtonState.Released;
         }
     }
 }

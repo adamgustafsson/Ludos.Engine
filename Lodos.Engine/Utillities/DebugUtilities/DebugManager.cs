@@ -55,13 +55,13 @@ namespace Ludos.Engine.Utilities.Debug
 
         public static void DrawRectancgle(GraphicsDevice graphicsDevice, SpriteBatch spriteBatch, int width, int height, Vector2 position, Color? color = null, float transparancy = 1)
         {
-            var r = GenerateScreenRectangle(graphicsDevice, width, height, color == null ? Color.White : (Color)color, transparancy);
+            var r = Utilities.CreateTexture2D(graphicsDevice, new Point(width, height), color == null ? Color.White : (Color)color, transparancy);
             spriteBatch.Draw(r, position, Color.White);
         }
 
         public void DrawDebugInfo(GameTime gameTime, SpriteBatch spriteBatch, Player player)
         {
-            var container = GenerateScreenRectangle(_graphicsDevice, 265, 180, Color.Black, 0.50f);
+            var container = Utilities.CreateTexture2D(_graphicsDevice, new Point(265, 180), Color.Black, 0.50f);
             spriteBatch.Draw(container, new Vector2(1651, 100), Color.White);
 
             _fpsCounter.DrawFps(spriteBatch, _fpsFont, new Vector2(1658f, 107f), Color.LightGray);
@@ -125,7 +125,7 @@ namespace Ludos.Engine.Utilities.Debug
 
             if (_drawCollision)
             {
-                _tmxManager.CurrentMap.DrawObjectLayer(spriteBatch, 0, Utilities.Round(_camera.CameraBounds), 0f);
+                _tmxManager.CurrentMap.DrawObjectLayer(spriteBatch, 0, _camera.CameraBounds.Round(), 0f);
                 
                 foreach (var platform in _tmxManager.MovingPlatforms)
                 {
@@ -133,22 +133,11 @@ namespace Ludos.Engine.Utilities.Debug
                 }
             }
 
-
             if (_drawPlayerCollision)
             {
                 DrawRectancgle(spriteBatch, _player.Bounds, transparancy: 0.50f);
                 DrawRectancgle(spriteBatch, _player.BottomDetectBounds, color: Color.Red, transparancy: 0.50f);
             }
-        }
-
-        private static Texture2D GenerateScreenRectangle(GraphicsDevice graphicsDevice, int recWidth, int recHeight, Color color, float transparency)
-        {
-            Texture2D r = new Texture2D(graphicsDevice, recWidth, recHeight);
-            Color[] data = new Color[recWidth * recHeight];
-            for (int i = 0; i < data.Length; ++i) data[i] = color * transparency;
-            r.SetData(data);
-
-            return r;
         }
     }
 }

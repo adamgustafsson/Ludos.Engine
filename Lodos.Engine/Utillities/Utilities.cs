@@ -1,13 +1,22 @@
-﻿using System.Drawing;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Ludos.Engine.Utilities
 {
     public static class Utilities
     {
-        public static Microsoft.Xna.Framework.Rectangle Round(RectangleF recF)
+        public static Texture2D CreateTexture2D(GraphicsDevice graphicsDevice, Point size, Color color, float transparency)
         {
-            var sysRec = Rectangle.Round(recF);
-            return new Microsoft.Xna.Framework.Rectangle(sysRec.X, sysRec.Y, sysRec.Width, sysRec.Height);
+            return CreateTexture2D(graphicsDevice, new System.Drawing.Size(size.X, size.Y), color, transparency);
+        }
+
+        public static Texture2D CreateTexture2D(GraphicsDevice graphicsDevice, System.Drawing.Size size, Color color, float transparency)
+        {
+            Texture2D r = new Texture2D(graphicsDevice, size.Width, size.Height);
+            Color[] data = new Color[size.Width * size.Height];
+            for (int i = 0; i < data.Length; ++i) data[i] = color * transparency;
+            r.SetData(data);
+            return r;
         }
     }
 }

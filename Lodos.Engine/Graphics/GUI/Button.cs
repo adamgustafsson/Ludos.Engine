@@ -7,8 +7,7 @@ namespace Ludos.Engine.Graphics
 {
     public class Button : GUIButton, ICloneable
     {
-        private readonly Texture2D[] _textures;
-
+        private readonly Texture2D[] _textures; 
         public Button(Texture2D texture, SpriteFont font, InputManager inputManager)
         : this (new Texture2D[] {texture}, font, inputManager)  
         {

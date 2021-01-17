@@ -36,15 +36,15 @@ namespace Ludos.Engine.Graphics
 
             if (BorderWidth > 0)
             {
-                outerLineTexture = CreateTexture2D(_graphicsDevice, Rectangle.Size, BorderColor, Transparancy);
-                var innerTexture = CreateTexture2D(_graphicsDevice, Rectangle.Size - new Point(BorderWidth * 2,BorderWidth * 2), ButtonColor, Transparancy);
+                outerLineTexture = Utilities.Utilities.CreateTexture2D(_graphicsDevice, Rectangle.Size, BorderColor, Transparancy);
+                var innerTexture = Utilities.Utilities.CreateTexture2D(_graphicsDevice, Rectangle.Size - new Point(BorderWidth * 2,BorderWidth * 2), ButtonColor, Transparancy);
 
                 spriteBatch.Draw(outerLineTexture, Position, color);
                 spriteBatch.Draw(innerTexture, (Position + new Vector2(BorderWidth, BorderWidth)), color);
             }
             else
             {
-                outerLineTexture = CreateTexture2D(_graphicsDevice, Rectangle.Size, ButtonColor, Transparancy);
+                outerLineTexture = Utilities.Utilities.CreateTexture2D(_graphicsDevice, Rectangle.Size, ButtonColor, Transparancy);
                 spriteBatch.Draw(outerLineTexture, Position, color);
             }
 
@@ -63,15 +63,6 @@ namespace Ludos.Engine.Graphics
         public object Clone()
         {
             return this.MemberwiseClone() as ProceduralButton;
-        }
-
-        private static Texture2D CreateTexture2D(GraphicsDevice graphicsDevice, Point size, Color color, float transparency)
-        {
-            Texture2D r = new Texture2D(graphicsDevice, size.X, size.Y);
-            Color[] data = new Color[size.X * size.Y];
-            for (int i = 0; i < data.Length; ++i) data[i] = color * transparency;
-            r.SetData(data);
-            return r;
         }
     }
 }

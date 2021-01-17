@@ -3,7 +3,6 @@ using Ludos.Engine.Model.Managers;
 using Ludos.Engine.Utilities;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -28,10 +27,10 @@ namespace Ludos.Engine.Model
 
         private bool _onMovingPlatform;
 
-        public Player(PointF startLocation, TMXManager tmxManager, Size playerSize)
+        public Player(Vector2 position, int width, int height, TMXManager tmxManager)
         {
             Gravity = 600;
-            Bounds = new RectangleF(startLocation, playerSize);
+            Bounds = new RectangleF(position.X, position.Y, width, height);
             Velocity = new Vector2(0, 0);
             Speed = new Vector2(10, Bounds.Y > 16 ? 225 : 200);
             _tmxManager = tmxManager;
@@ -110,7 +109,7 @@ namespace Ludos.Engine.Model
 
         private void CalculateCollision()
         {
-            var collisionRects = _tmxManager.GetObjectsInRegion(World.DefaultLayerInfo.GROUND_COLLISION, Utilities.Utilities.Round(Bounds)).Where(x => x.Type != "platform");
+            var collisionRects = _tmxManager.GetObjectsInRegion(World.DefaultLayerInfo.GROUND_COLLISION, Bounds.Round()).Where(x => x.Type != "platform");
 
             foreach (var collisionRect in collisionRects)
             {

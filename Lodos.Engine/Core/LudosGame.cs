@@ -2,12 +2,12 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 
-namespace Ludos.Engine.States
+namespace Ludos.Engine.Core
 {
     public abstract class LudosGame : Game
     {
 
-        public static int GraphicsScale;
+        public static int GraphicsScale = 1;
 
         protected GraphicsDeviceManager _graphics;
         protected SpriteBatch _spriteBatch;
@@ -16,10 +16,15 @@ namespace Ludos.Engine.States
         private float _aspectRatio;
         private Point _oldWindowSize;
 
-        public LudosGame(int graphicsScale = 1)
+        public LudosGame(int graphicsScale)
+        : this()
+        {
+            GraphicsScale = graphicsScale;
+        }
+
+        public LudosGame()
         {
             _graphics = new GraphicsDeviceManager(this);
-            GraphicsScale = graphicsScale;
             Window.AllowUserResizing = true;
             Window.ClientSizeChanged += OnResize;
         }
@@ -51,7 +56,7 @@ namespace Ludos.Engine.States
             Window.ClientSizeChanged += OnResize;
 
         }
-
+        public abstract void ChangeState(GameState stateController);
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
@@ -59,7 +64,6 @@ namespace Ludos.Engine.States
             _oldWindowSize = new Point(Window.ClientBounds.Width, Window.ClientBounds.Height);
             _offScreenRenderTarget = new RenderTarget2D(GraphicsDevice, Window.ClientBounds.Width, Window.ClientBounds.Height);
         }
-
         protected override bool BeginDraw()
         {
             GraphicsDevice.SetRenderTarget(_offScreenRenderTarget);
@@ -73,7 +77,5 @@ namespace Ludos.Engine.States
             _spriteBatch.End();
             base.EndDraw();
         }
-
-        public abstract void ChangeState(GameState stateController);
     }
 }

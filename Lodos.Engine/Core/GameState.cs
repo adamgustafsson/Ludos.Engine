@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Ludos.Engine.States
+namespace Ludos.Engine.Core
 {
     public abstract class GameState
     {
@@ -21,6 +21,5 @@ namespace Ludos.Engine.States
         public abstract void Update(GameTime gameTime);
         public abstract void PostUpdate(GameTime gameTime);
         public abstract void Draw(GameTime gameTime, SpriteBatch spriteBatch);
-        public abstract void DrawNonScaled(GameTime gameTime, SpriteBatch spriteBatch);
     }
 }
