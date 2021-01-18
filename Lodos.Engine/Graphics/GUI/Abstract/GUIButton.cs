@@ -18,7 +18,6 @@ namespace Ludos.Engine.Graphics
         public string Text { get; set; }
         public bool UseFontShading { get; set; }
 
-
         public override void Update(GameTime gameTime)
         {
             _isHovering = _inputMangager.IsHovering(Rectangle, Core.LudosGame.GraphicsScale);

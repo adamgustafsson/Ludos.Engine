@@ -7,7 +7,16 @@ namespace Ludos.Engine.Graphics
 {
     public class Button : GUIButton, ICloneable
     {
-        private readonly Texture2D[] _textures; 
+        private readonly Texture2D[] _textures;
+
+        public override Vector2 Position { get; set; }
+
+        public override Rectangle Rectangle 
+        {
+            get => new Rectangle((int)Position.X, (int)Position.Y, _textures[0].Width, _textures[0].Height);
+            set => Rectangle = value;
+        }
+
         public Button(Texture2D texture, SpriteFont font, InputManager inputManager)
         : this (new Texture2D[] {texture}, font, inputManager)  
         {
@@ -18,7 +27,6 @@ namespace Ludos.Engine.Graphics
             _textures = textures;
             _font = font;
             _inputMangager = inputManager;
-            _size = new System.Drawing.Size(_textures[0].Width, _textures[0].Height);
             TextColor = Color.White;
         }
 

@@ -1,5 +1,5 @@
 ﻿using FuncWorks.XNA.XTiled;
-using Ludos.Engine.Model.Managers;
+using Ludos.Engine.Managers;
 using Ludos.Engine.Utilities;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;

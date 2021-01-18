@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework.Content;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Ludos.Engine.Model.Managers
+namespace Ludos.Engine.Managers
 {
     public class TMXManager
     {

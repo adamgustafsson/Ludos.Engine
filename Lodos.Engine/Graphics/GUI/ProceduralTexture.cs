@@ -12,14 +12,20 @@ namespace Ludos.Engine.Graphics
         public Color BorderColor { get; set; }
         public int BorderWidth { get; set; } = 0;
         public float Transparancy { get; set; } = 1;
+        public override Rectangle Rectangle { get; set; }
+        public override Vector2 Position
+        {
+            get => Rectangle.Location.ToVector2();
+            set => Rectangle = new Rectangle((int)value.X, (int)value.Y, Rectangle.Width, Rectangle.Height);
+        }
 
         public ProceduralTexture(GraphicsDevice graphicsDevice, Rectangle area)
         {
             _graphicsDevice = graphicsDevice;
-            _size = new System.Drawing.Size(area.Width, area.Height);
-
+            Rectangle = area;
             Position = new Vector2(area.X, area.Y);
         }
+
         public override void Update(GameTime gameTime)
         {
         }
@@ -47,7 +53,7 @@ namespace Ludos.Engine.Graphics
             foreach (var t in textures)
             {
                 spriteBatch.Draw(t, texturePosition, Color.White);
-                texturePosition += new Vector2(0, (float)newHeight);
+                texturePosition += new Vector2(0, newHeight);
             }
         }
 

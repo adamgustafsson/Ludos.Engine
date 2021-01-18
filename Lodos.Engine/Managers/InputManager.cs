@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using System;
+using System.Collections.Generic;
 using SD = System.Drawing;
 
 namespace Ludos.Engine.Managers
@@ -15,6 +16,8 @@ namespace Ludos.Engine.Managers
         
         private SD.Size _defaultPreferredBackBuffer;
         private Rectangle _clientBounds;
+
+        public Dictionary<string, Input> UserControls { get; set; }
 
         public InputManager(SD.Size defaultPreferredBackBuffer)
         {

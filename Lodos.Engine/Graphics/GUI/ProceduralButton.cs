@@ -12,15 +12,19 @@ namespace Ludos.Engine.Graphics
         public Color BorderColor { get; set; }
         public int BorderWidth { get; set; } = 0;
         public float Transparancy { get; set; } = 1;
+        public override Rectangle Rectangle { get; set; }
+        public override Vector2 Position 
+        { 
+            get => Rectangle.Location.ToVector2();
+            set => Rectangle = new Rectangle((int)value.X, (int)value.Y, Rectangle.Width, Rectangle.Height);  
+        }
 
         public ProceduralButton(GraphicsDevice graphicsDevice, SpriteFont font, InputManager inputManager, Rectangle area)
         {
             _graphicsDevice = graphicsDevice;
             _font = font;
             _inputMangager = inputManager;
-            _size = new System.Drawing.Size(area.Width, area.Height);
-
-            Position = new Vector2(area.X, area.Y);
+            Rectangle = area;
             TextColor = Color.White;
             ButtonColor = Color.DarkBlue;
         }
