@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30523.141
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lodos.Engine", "Lodos.Engine\Lodos.Engine.csproj", "{B2CD1308-B586-4623-831F-1D11EB719BB5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ludos.Engine", "Ludos.Engine\Ludos.Engine.csproj", "{B2CD1308-B586-4623-831F-1D11EB719BB5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
