@@ -10,11 +10,11 @@ namespace Ludos.Engine.Graphics
         private System.Drawing.RectangleF _cameraBounds;
         private System.Drawing.RectangleF _movementBounds;
         private Viewport _viewPort;
-        private Player _player;
+        private LudosPlayer _player;
         private readonly float _scale;
 
 
-        public Camera2D(GraphicsDevice graphicsDevice, Player player, float cameraScale)
+        public Camera2D(GraphicsDevice graphicsDevice, LudosPlayer player, float cameraScale)
         {
             _viewPort = graphicsDevice.Viewport;
             _cameraBounds = new System.Drawing.RectangleF(graphicsDevice.Viewport.Bounds.X, graphicsDevice.Viewport.Bounds.Y, graphicsDevice.Viewport.Bounds.Width, graphicsDevice.Viewport.Bounds.Height);

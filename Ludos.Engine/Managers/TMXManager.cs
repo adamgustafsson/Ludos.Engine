@@ -10,7 +10,9 @@ namespace Ludos.Engine.Managers
     public class TMXManager
     {
         public Map CurrentMap { get => _maps [_currentLevelIndex]; }
-        public List<MovingPlatform> MovingPlatforms { get; private set; } = new List<MovingPlatform>();
+        public TmxMapInfo CurrentMapInfo { get => _mapsInfo[_currentLevelIndex]; }
+
+        public List<MovingPlatform> MovingPlatforms { get; private set; }
 
         private int _currentLevelIndex;
         private readonly List<Map> _maps;
@@ -26,18 +28,16 @@ namespace Ludos.Engine.Managers
             LoadMaps(content);
             PopulateLayerNames();
             AssignObjectLayers();
-
-            foreach (var mapObject in CurrentMap.ObjectLayers[DefaultLayerInfo.GROUND_COLLISION].MapObjects.Where(x => x.Polyline != null))
-            {
-                MovingPlatforms.Add(new MovingPlatform(mapObject.Polyline, mapsInfo[_currentLevelIndex].MovingPlatformSize));
-            }
+            LoadMovingPlatforms();
         }
 
-        public void LoadMap(int mapIndex)
+        public void LoadMap(string mapName)
         {
-            _currentLevelIndex = mapIndex;
+            var map = _mapsInfo.Where(x => x.Name == mapName).FirstOrDefault();
+            _currentLevelIndex = _mapsInfo.IndexOf(map);
             PopulateLayerNames();
             AssignObjectLayers();
+            LoadMovingPlatforms();
         }
 
         public void Update(GameTime gameTime)
@@ -105,6 +105,16 @@ namespace Ludos.Engine.Managers
                 {
                     _layerIndexInfo[layerName] = i;
                 }
+            }
+        }
+
+        private void LoadMovingPlatforms()
+        {
+            MovingPlatforms = new List<MovingPlatform>();
+
+            foreach (var mapObject in CurrentMap.ObjectLayers[DefaultLayerInfo.GROUND_COLLISION].MapObjects.Where(x => x.Polyline != null))
+            {
+                MovingPlatforms.Add(new MovingPlatform(mapObject.Polyline, _mapsInfo[_currentLevelIndex].MovingPlatformSize));
             }
         }
     }

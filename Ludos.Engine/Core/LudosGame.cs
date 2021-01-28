@@ -1,12 +1,12 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using System.Collections.Generic;
 
 namespace Ludos.Engine.Core
 {
     public abstract class LudosGame : Game
     {
-
         public static int GraphicsScale = 1;
 
         protected GraphicsDeviceManager _graphics;
@@ -16,19 +16,20 @@ namespace Ludos.Engine.Core
         private float _aspectRatio;
         private Point _oldWindowSize;
 
+        public bool GameIsPaused { get; set; }
+        public GameState[] GameStates { get; set; }
+
         public LudosGame(int graphicsScale)
         : this()
         {
             GraphicsScale = graphicsScale;
         }
-
         public LudosGame()
         {
             _graphics = new GraphicsDeviceManager(this);
             Window.AllowUserResizing = true;
             Window.ClientSizeChanged += OnResize;
         }
-
         public void OnResize(Object sender, EventArgs e)
         {
             // Remove this event handler, so we don't call it when we change the window size in here
@@ -56,7 +57,8 @@ namespace Ludos.Engine.Core
             Window.ClientSizeChanged += OnResize;
 
         }
-        public abstract void ChangeState(GameState stateController);
+        public abstract void ChangeState(int gameStateIndex);
+        public abstract void LoadMap(string mapName);
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);

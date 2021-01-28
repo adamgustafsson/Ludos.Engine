@@ -68,7 +68,7 @@ namespace Ludos.Engine.Model.World
             _platform.X = _position.X;
             _platform.Y = _position.Y;
 
-            _detectionBounds = new SD.RectangleF(_platform.X, _platform.Y, _platform.Width, _platform.Height * 0.13f);
+            _detectionBounds = new SD.RectangleF(_platform.X, _platform.Y, _platform.Width, _platform.Height * 0.20f);
         }
     }
 }

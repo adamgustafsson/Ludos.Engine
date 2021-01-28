@@ -9,12 +9,13 @@ using System.Linq;
 
 namespace Ludos.Engine.Model
 {
-    public class Player : Actor
+    public class LudosPlayer : Actor
     {
         private TMXManager _tmxManager;
+        private InputManager _inputManager;
         private RectangleF _lastPosition;
-        
-        private bool _onGround;
+
+        private Vector2 _startPositon; 
         private bool _imidiateTopCollisionExists;
         private bool _jumpButtonPressedDown = false;
         private bool _jumpInitiated;
@@ -23,27 +24,28 @@ namespace Ludos.Engine.Model
         private MapObject _mostRecentLadder;
 
         private float _currentAcceleration = 0.001f;
-        private float _accelerationIncrease = 0.15f;
-
         private bool _onMovingPlatform;
 
-        public Player(Vector2 position, int width, int height, TMXManager tmxManager)
+        public float HorizontalAcceleration { get; set; } = 0.15f;
+
+        public LudosPlayer(Vector2 position, int width, int height, TMXManager tmxManager, InputManager inputManager)
         {
             Gravity = 600;
             Bounds = new RectangleF(position.X, position.Y, width, height);
             Velocity = new Vector2(0, 0);
             Speed = new Vector2(10, Bounds.Y > 16 ? 225 : 200);
             _tmxManager = tmxManager;
+            _inputManager = inputManager;
+            _startPositon = position;
 
             Abilities.AddRange(new List<IAbility>() { new WallJump(), new DoubleJump() });
             //GetAbility<DoubleJump>().AbilityEnabled = false;
         }
-
-        public void Update(float elapsedTime)
+        public virtual void Update(float elapsedTime)
         {
             _lastPosition = Bounds;
 
-            var direction = GetDirection(Keyboard.GetState());
+            var direction = GetDirection();
             Accelerate(ref direction);
             Velocity = CalculateMoveVelocity(Velocity, direction, Speed, elapsedTime);
            
@@ -57,6 +59,7 @@ namespace Ludos.Engine.Model
             CalculateLadderCollision();
             CalculateMovingPlatformCollision();
             SetState();
+            SetDirection();
 
             BottomDetectBounds = new RectangleF(Bounds.X, Bounds.Y + (Bounds.Height * 0.90f), Bounds.Width, Bounds.Height * 0.13f);
 
@@ -68,12 +71,10 @@ namespace Ludos.Engine.Model
                 }
             }
         }
-
-        public Vector2 GetPositionV()
+        public void Reset()
         {
-            return new Vector2(Bounds.X, Bounds.Y);
+            Position = _startPositon;
         }
-
         private void CalculateMovingPlatformCollision()
         {
             _onMovingPlatform = false;
@@ -106,7 +107,6 @@ namespace Ludos.Engine.Model
                 }
             }
         }
-
         private void CalculateCollision()
         {
             var collisionRects = _tmxManager.GetObjectsInRegion(World.DefaultLayerInfo.GROUND_COLLISION, Bounds.Round()).Where(x => x.Type != "platform");
@@ -175,7 +175,6 @@ namespace Ludos.Engine.Model
                 _imidiateTopCollisionExists = collisionRectsInflateOne.Any(x => (x.Bounds.Bottom == Bounds.Top)); // Object bottom is colliding.
             }
         }
-
         private void CalculateLadderCollision()
         {
             var ladderDetectionBounds = Bounds;
@@ -217,7 +216,6 @@ namespace Ludos.Engine.Model
                 }
             }
         }
-
         private void SetGrounded(PointF currentPosition)
         {
             Bounds.Location = currentPosition;
@@ -227,7 +225,6 @@ namespace Ludos.Engine.Model
             GetAbility<WallJump>()?.ResetAbility();
             GetAbility<DoubleJump>()?.ResetAbility();
         }
-
         private Vector2 CalculateMoveVelocity(Vector2 linearVelocity, Vector2 direction, Vector2 speed, float elapsedTime)
         {
             var newVelocity = linearVelocity;
@@ -267,16 +264,15 @@ namespace Ludos.Engine.Model
 
             return newVelocity;
         }
-
-        private Vector2 GetDirection(KeyboardState keyboardState)
+        private Vector2 GetDirection()
         {
-            var movingLeft = keyboardState.IsKeyDown(Keys.A) ? -Speed.X * _currentAcceleration : 0;
-            var movingRight = keyboardState.IsKeyDown(Keys.D) ? -Speed.X * _currentAcceleration : 0;
+            var movingLeft = _inputManager.IsInputDown(InputName.MoveLeft) ? -Speed.X * _currentAcceleration : 0;
+            var movingRight = _inputManager.IsInputDown(InputName.MoveRight) ? -Speed.X * _currentAcceleration : 0;
 
-            var climbingUp = keyboardState.IsKeyDown(Keys.W) && _ladderIsAvailable ? -Speed.X : 0;
-            var climbingDown = keyboardState.IsKeyDown(Keys.S) && _ladderIsAvailable ? -Speed.X : 0;
+            var climbingUp = _inputManager.IsInputDown(InputName.MoveUp) && _ladderIsAvailable ? -Speed.X : 0;
+            var climbingDown = _inputManager.IsInputDown(InputName.MoveDown) && _ladderIsAvailable ? -Speed.X : 0;
 
-            var jumpQueueIsOk = JumpQueueIsOk(keyboardState);
+            var jumpQueueIsOk = JumpQueueIsOk();
             _jumpInitiated = jumpQueueIsOk && (_onGround || OnLadder || _onMovingPlatform || (GetAbility<WallJump>()?.IsWallClinging ?? false) || (GetAbility<DoubleJump>()?.DoubleJumpAvailable ?? false));
 
             if (_jumpInitiated && !_onGround && !OnLadder && !_onMovingPlatform && !(GetAbility<WallJump>()?.IsWallClinging ?? false))
@@ -298,25 +294,23 @@ namespace Ludos.Engine.Model
                 _jumpInitiated ? -1 : climbingDirection
             );
         }
-
-        private bool JumpQueueIsOk(KeyboardState keyboardState)
+        private bool JumpQueueIsOk()
         {
             var jumpAvailable = false;
 
-            if (keyboardState.IsKeyDown(Keys.Space) && !_jumpButtonPressedDown)
+            if (_inputManager.IsInputDown(InputName.Jump) && !_jumpButtonPressedDown)
             {
                 _jumpButtonPressedDown = true;
                 jumpAvailable = true;
             }
 
-            if (keyboardState.IsKeyUp(Keys.Space))
+            if (_inputManager.IsInputUp(InputName.Jump))
             {
                 _jumpButtonPressedDown = false;       
             }
 
             return jumpAvailable;
         }
-
         private void Accelerate(ref Vector2 direction)
         {
             direction.X = direction.X > Speed.X ? Speed.X : direction.X;
@@ -326,7 +320,7 @@ namespace Ludos.Engine.Model
             var acceleratingLeft = direction.X < 0 && _currentAcceleration < 1;
 
             if (acceleratingRight || acceleratingLeft)
-                _currentAcceleration += _accelerationIncrease;
+                _currentAcceleration += HorizontalAcceleration;
             else if (direction.X == 0)
                 _currentAcceleration = 0.001f;
         }

@@ -16,14 +16,14 @@ namespace Ludos.Engine.Utilities.Debug
         private readonly Texture2D _debugPanel;
         private readonly Camera2D _camera;
         private readonly TMXManager _tmxManager;
-        private readonly Player _player;
+        private readonly LudosPlayer _player;
 
         private bool _drawCollision;
         private bool _drawCameraMovementBounds;
         private bool _drawDebugInfo = true;
         private bool _drawPlayerCollision;
 
-        public DebugManager(ContentManager content, GraphicsDevice graphicsDevice, InputManager inputManager, Camera2D camera, TMXManager tmxManager, Player player)
+        public DebugManager(ContentManager content, GraphicsDevice graphicsDevice, InputManager inputManager, Camera2D camera, TMXManager tmxManager, LudosPlayer player)
         {
             _fpsCounter = new FpsCounter();
             _fpsFont = content.Load<SpriteFont>("Fonts/Segoe");
@@ -58,18 +58,19 @@ namespace Ludos.Engine.Utilities.Debug
             spriteBatch.Draw(r, position, Color.White);
         }
 
-        public void DrawDebugInfo(GameTime gameTime, SpriteBatch spriteBatch, Player player)
+        public void DrawDebugInfo(GameTime gameTime, SpriteBatch spriteBatch, LudosPlayer player)
         {
-            var container = Utilities.CreateTexture2D(_graphicsDevice, new Point(265, 180), Color.Black, 0.50f);
+            var container = Utilities.CreateTexture2D(_graphicsDevice, new Point(265, 185), Color.Black, 0.50f);
             spriteBatch.Draw(container, new Vector2(1651, 100), Color.White);
 
             _fpsCounter.DrawFps(spriteBatch, _fpsFont, new Vector2(1658f, 107f), Color.LightGray);
             spriteBatch.DrawString(_fpsFont, "__________________________________________", new Vector2(1661, 167f), Color.LightGray);
             spriteBatch.DrawString(_fpsFont, "Velocity X: " + player.Velocity.X, new Vector2(1661, 187f), Color.LightGray);
             spriteBatch.DrawString(_fpsFont, "Velocity Y: " + player.Velocity.Y, new Vector2(1661, 203f), Color.LightGray);
-            spriteBatch.DrawString(_fpsFont, "Position X: " + player.GetPositionV().X, new Vector2(1661, 218f), Color.LightGray);
-            spriteBatch.DrawString(_fpsFont, "Position Y: " + player.GetPositionV().Y, new Vector2(1661, 233f), Color.LightGray);
+            spriteBatch.DrawString(_fpsFont, "Position X: " + player.Position.X, new Vector2(1661, 218f), Color.LightGray);
+            spriteBatch.DrawString(_fpsFont, "Position Y: " + player.Position.Y, new Vector2(1661, 233f), Color.LightGray);
             spriteBatch.DrawString(_fpsFont, "State: " + player.CurrentState, new Vector2(1661, 248f), Color.LightGray);
+            spriteBatch.DrawString(_fpsFont, "Direction: " + player.CurrentDirection, new Vector2(1661, 263f), Color.LightGray);
         }
 
         public void DrawDebugPanel(SpriteBatch spriteBatch, GameTime gameTime)

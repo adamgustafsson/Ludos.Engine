@@ -1,10 +1,10 @@
-﻿using Ludos.Engine.Managers;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Graphics;
-
-namespace Ludos.Engine.Core
+﻿namespace Ludos.Engine.Core
 {
+    using Ludos.Engine.Managers;
+    using Microsoft.Xna.Framework;
+    using Microsoft.Xna.Framework.Content;
+    using Microsoft.Xna.Framework.Graphics;
+
     public abstract class GameState
     {
         protected ContentManager _content;

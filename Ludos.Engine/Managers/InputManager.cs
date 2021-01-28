@@ -8,9 +8,13 @@ namespace Ludos.Engine.Managers
 {
     public class InputManager
     {
-        private KeyboardState _kbs;
-        private KeyboardState _prevKbs;
-        
+        private KeyboardState _keyboardState;
+        private KeyboardState _prevKeyboardState;
+
+        private GamePadState _gamepadState;
+        private GamePadState _prevGamepadState;
+        private bool _gamepadIsConnected;
+
         private MouseState _mouseState;
         private MouseState _prevMoseState;
         
@@ -22,6 +26,46 @@ namespace Ludos.Engine.Managers
         public InputManager(SD.Size defaultPreferredBackBuffer)
         {
             _defaultPreferredBackBuffer = defaultPreferredBackBuffer;
+        }
+
+        public void Update(Rectangle clientBounds)
+        {
+            _prevMoseState = _mouseState;
+            _mouseState = Mouse.GetState();
+            _prevKeyboardState = _keyboardState;
+            _keyboardState = Keyboard.GetState();
+            _prevGamepadState = _gamepadState;
+            _gamepadState = GamePad.GetState(PlayerIndex.One);
+            _gamepadIsConnected = _gamepadState.IsConnected;
+            _clientBounds = clientBounds;
+        }
+
+        public bool IsHovering(Rectangle target, int scale = 1)
+        {
+            var mousePosition = GetMousePosition();
+            return target.Intersects(new Rectangle(mousePosition.X / scale, mousePosition.Y / scale, 1, 1));
+        }
+
+        public bool LeftClicked(Rectangle target, int scale = 1)
+        {  
+            return IsHovering(target, scale) && _prevMoseState.LeftButton == ButtonState.Pressed && _mouseState.LeftButton == ButtonState.Released;
+        }
+
+        public KeyboardState GetPreviousKeyboardState()
+        {
+            return _prevKeyboardState;
+        }
+
+        public bool IsInputDown(string inputName)
+        {
+            var input = UserControls[inputName];
+            return _keyboardState.IsKeyDown(input.Key) || (_gamepadIsConnected && _gamepadState.IsButtonDown(input.Button));
+        }
+
+        public bool IsInputUp(string inputName)
+        {
+            var input = UserControls[inputName];
+            return _keyboardState.IsKeyUp(input.Key) || (_gamepadIsConnected && _gamepadState.IsButtonUp(input.Button));
         }
 
         private Point GetMousePosition()
@@ -36,27 +80,6 @@ namespace Ludos.Engine.Managers
             }
 
             return new Point(_mouseState.X, _mouseState.Y);
-        }
-
-        public void Update(Rectangle clientBounds)
-        {
-            _prevMoseState = _mouseState;
-            _mouseState = Mouse.GetState();
-            _prevKbs = _kbs;
-            _kbs = Keyboard.GetState();
-
-            _clientBounds = clientBounds;
-        }
-
-        public bool IsHovering(Rectangle target, int scale = 1)
-        {
-            var mousePosition = GetMousePosition();
-            return target.Intersects(new Rectangle(mousePosition.X / scale, mousePosition.Y / scale, 1, 1));
-        }
-
-        public bool LeftClicked(Rectangle target, int scale = 1)
-        {  
-            return IsHovering(target, scale) && _prevMoseState.LeftButton == ButtonState.Pressed && _mouseState.LeftButton == ButtonState.Released;
         }
     }
 }
