@@ -1,12 +1,16 @@
-﻿using Ludos.Engine.Graphics;
-using Ludos.Engine.Managers;
-using Ludos.Engine.Model;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Graphics;
-
-namespace Ludos.Engine.Utilities.Debug
+﻿namespace Ludos.Engine.Utilities.Debug
 {
+    using System.Drawing;
+    using Ludos.Engine.Graphics;
+    using Ludos.Engine.Managers;
+    using Ludos.Engine.Model;
+    using Microsoft.Xna.Framework;
+    using Microsoft.Xna.Framework.Content;
+    using Microsoft.Xna.Framework.Graphics;
+    using Color = Microsoft.Xna.Framework.Color;
+    using Point = Microsoft.Xna.Framework.Point;
+    using Rectangle = Microsoft.Xna.Framework.Rectangle;
+
     public class DebugManager
     {
         private readonly FpsCounter _fpsCounter;
@@ -35,6 +39,12 @@ namespace Ludos.Engine.Utilities.Debug
             _player = player;
         }
 
+        public static void DrawRectancgle(GraphicsDevice graphicsDevice, SpriteBatch spriteBatch, int width, int height, Vector2 position, Color? color = null, float transparancy = 1)
+        {
+            var r = Utilities.CreateTexture2D(graphicsDevice, new Point(width, height), color == null ? Color.White : (Color)color, transparancy);
+            spriteBatch.Draw(r, position, Color.White);
+        }
+
         public void Update(GameTime gameTime)
         {
             _fpsCounter.Update(gameTime);
@@ -46,16 +56,10 @@ namespace Ludos.Engine.Utilities.Debug
             DrawRectancgle(_graphicsDevice, spriteBatch, rectangle.Width, rectangle.Height, position, color, transparancy);
         }
 
-        public void DrawRectancgle(SpriteBatch spriteBatch, System.Drawing.RectangleF rectangle, Color? color = null, float transparancy = 1, bool visualize = true)
+        public void DrawRectancgle(SpriteBatch spriteBatch, RectangleF rectangle, Color? color = null, float transparancy = 1, bool visualize = true)
         {
             var position = visualize ? _camera.VisualizeCordinates(rectangle) : new Vector2(rectangle.X, rectangle.Y);
             DrawRectancgle(_graphicsDevice, spriteBatch, rectangle.Width.ToInt32(), rectangle.Height.ToInt32(), position, color, transparancy);
-        }
-
-        public static void DrawRectancgle(GraphicsDevice graphicsDevice, SpriteBatch spriteBatch, int width, int height, Vector2 position, Color? color = null, float transparancy = 1)
-        {
-            var r = Utilities.CreateTexture2D(graphicsDevice, new Point(width, height), color == null ? Color.White : (Color)color, transparancy);
-            spriteBatch.Draw(r, position, Color.White);
         }
 
         public void DrawDebugInfo(GameTime gameTime, SpriteBatch spriteBatch, LudosPlayer player)
@@ -115,7 +119,6 @@ namespace Ludos.Engine.Utilities.Debug
             {
                 DrawRectancgle(spriteBatch, showPlayerCollisionChkbox, Color.White, transparancy: 0.50f, visualize: false);
             }
-
         }
 
         public void DrawScaledContent(SpriteBatch spriteBatch)
@@ -126,7 +129,7 @@ namespace Ludos.Engine.Utilities.Debug
             if (_drawCollision)
             {
                 _tmxManager.CurrentMap.DrawObjectLayer(spriteBatch, 0, _camera.CameraBounds.Round(), 0f);
-                
+
                 foreach (var platform in _tmxManager.MovingPlatforms)
                 {
                     DrawRectancgle(spriteBatch, platform.DetectionBounds, color: Color.Green);

@@ -1,17 +1,18 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-
-namespace Ludos.Engine.Utilities.Debug
+﻿namespace Ludos.Engine.Utilities.Debug
 {
+    using Microsoft.Xna.Framework;
+    using Microsoft.Xna.Framework.Graphics;
+
     public class FpsCounter
     {
+        private double _msgFrequency = 1.0f;
+        private string _msg = string.Empty;
+
         private double _frames = 0;
         private double _updates = 0;
         private double _elapsed = 0;
         private double _last = 0;
         private double _now = 0;
-        public double _msgFrequency = 1.0f;
-        public string _msg = "";
 
         /// <summary>
         /// The msgFrequency here is the reporting time to update the message.
@@ -28,6 +29,7 @@ namespace Ludos.Engine.Utilities.Debug
                 _updates = 0;
                 _last = _now;
             }
+
             _updates++;
         }
 

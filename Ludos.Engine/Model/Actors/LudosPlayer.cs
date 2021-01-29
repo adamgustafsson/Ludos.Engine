@@ -1,12 +1,13 @@
 ﻿namespace Ludos.Engine.Model
 {
     using System.Collections.Generic;
+    using System.Drawing;
     using System.Linq;
     using FuncWorks.XNA.XTiled;
     using Ludos.Engine.Managers;
     using Ludos.Engine.Utilities;
     using Microsoft.Xna.Framework;
-    using System.Drawing;
+    using Point = Microsoft.Xna.Framework.Point;
 
     public class LudosPlayer : Actor
     {
@@ -46,9 +47,9 @@
 
         public float HorizontalAcceleration { get; set; } = 0.15f;
         public override Vector2 Velocity { get => _velocity; }
-        public override SD.RectangleF Bounds { get => _bounds; }
-        public override Vector2 Position { get => new Vector2(_bounds.X, _bounds.Y); set => _bounds.Location = new SD.PointF(value.X, value.Y); }
-        public override Point Size { set => _bounds.Size = new SD.SizeF(value.X, value.Y); }
+        public override RectangleF Bounds { get => _bounds; }
+        public override Vector2 Position { get => new Vector2(_bounds.X, _bounds.Y); set => _bounds.Location = new PointF(value.X, value.Y); }
+        public override Point Size { set => _bounds.Size = new SizeF(value.X, value.Y); }
 
         public virtual void Update(float elapsedTime)
         {
@@ -70,7 +71,7 @@
             SetState();
             SetDirection();
 
-            BottomDetectBounds = new SD.RectangleF(_bounds.X, _bounds.Y + (_bounds.Height * 0.90f), _bounds.Width, _bounds.Height * 0.13f);
+            BottomDetectBounds = new RectangleF(_bounds.X, _bounds.Y + (_bounds.Height * 0.90f), _bounds.Width, _bounds.Height * 0.13f);
 
             if (GetAbility<DoubleJump>()?.AbilityEnabled ?? false)
             {
@@ -131,12 +132,12 @@
 
                 if (isGroundCollision && !OnGround)
                 {
-                    SetGrounded(new SD.PointF(_lastPosition.X, collisionRect.Bounds.Top - _bounds.Height));
+                    SetGrounded(new PointF(_lastPosition.X, collisionRect.Bounds.Top - _bounds.Height));
                 }
                 else if (isRoofCollision)
                 {
                     _velocity.Y = 0;
-                    _bounds.Location = new SD.PointF(_lastPosition.X, collisionRect.Bounds.Bottom);
+                    _bounds.Location = new PointF(_lastPosition.X, collisionRect.Bounds.Bottom);
 
                     GetAbility<WallJump>()?.ResetAbility();
                 }
@@ -202,7 +203,7 @@
 
                 if (onTopOfLadder)
                 {
-                    SetGrounded(new SD.PointF(_bounds.X, _mostRecentLadder.Bounds.Top - _bounds.Height));
+                    SetGrounded(new PointF(_bounds.X, _mostRecentLadder.Bounds.Top - _bounds.Height));
                 }
             }
 
@@ -229,7 +230,7 @@
             }
         }
 
-        private void SetGrounded(SD.PointF currentPosition)
+        private void SetGrounded(PointF currentPosition)
         {
             _bounds.Location = currentPosition;
             OnGround = true;
