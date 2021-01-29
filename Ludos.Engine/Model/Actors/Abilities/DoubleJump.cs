@@ -1,16 +1,15 @@
-﻿
-namespace Ludos.Engine.Model
+﻿namespace Ludos.Engine.Model
 {
     internal class DoubleJump : IAbility
     {
-        public bool AbilityEnabled { get; set; }
-        public bool DoubleJumpAvailable { get; set; } = true;
-        public bool DoubleJumpUsed { get; set; } = false;
-
         public DoubleJump()
         {
             AbilityEnabled = true;
         }
+
+        public bool AbilityEnabled { get; set; }
+        public bool DoubleJumpAvailable { get; set; } = true;
+        public bool DoubleJumpUsed { get; set; } = false;
 
         public void ResetAbility()
         {

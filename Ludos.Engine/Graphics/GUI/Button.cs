@@ -1,56 +1,62 @@
-﻿using Ludos.Engine.Managers;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using System;
-
-namespace Ludos.Engine.Graphics
+﻿namespace Ludos.Engine.Graphics
 {
+    using System;
+    using Ludos.Engine.Managers;
+    using Microsoft.Xna.Framework;
+    using Microsoft.Xna.Framework.Graphics;
+
     public class Button : GUIButton, ICloneable
     {
         private readonly Texture2D[] _textures;
 
-        public override Vector2 Position { get; set; }
-
-        public override Rectangle Rectangle 
-        {
-            get => new Rectangle((int)Position.X, (int)Position.Y, _textures[0].Width, _textures[0].Height);
-            set => Rectangle = value;
-        }
-
         public Button(Texture2D texture, SpriteFont font, InputManager inputManager)
-        : this (new Texture2D[] {texture}, font, inputManager)  
+        : this(new Texture2D[] { texture }, font, inputManager)
         {
         }
 
         public Button(Texture2D[] textures, SpriteFont font, InputManager inputManager)
+             : base(font, inputManager)
         {
             _textures = textures;
-            _font = font;
-            _inputMangager = inputManager;
             TextColor = Color.White;
+        }
+
+        public override Vector2 Position { get; set; }
+
+        public override Rectangle Rectangle
+        {
+            get => new Rectangle((int)Position.X, (int)Position.Y, _textures[0].Width, _textures[0].Height);
+            set => Rectangle = value;
         }
 
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
             var color = Color.White;
 
-            if (_isHovering)
+            if (IsHovering)
+            {
                 color = Color.Gray;
+            }
 
             foreach (Texture2D texture in _textures)
+            {
                 spriteBatch.Draw(texture, Rectangle, color);
+            }
 
             if (!string.IsNullOrEmpty(Text))
             {
-                var x = (Rectangle.X + (Rectangle.Width / 2)) - (_font.MeasureString(Text).X / 2);
-                var y = (Rectangle.Y + (Rectangle.Height / 2)) - (_font.MeasureString(Text).Y / 2);
+                var x = (Rectangle.X + (Rectangle.Width / 2)) - (Font.MeasureString(Text).X / 2);
+                var y = (Rectangle.Y + (Rectangle.Height / 2)) - (Font.MeasureString(Text).Y / 2);
 
-                if (UseFontShading && !_isHovering)
-                    spriteBatch.DrawString(_font, Text, new Vector2(x, y + 1), Color.Black);
+                if (UseFontShading && !IsHovering)
+                {
+                    spriteBatch.DrawString(Font, Text, new Vector2(x, y + 1), Color.Black);
+                }
 
-                spriteBatch.DrawString(_font, Text, new Vector2(x, y), TextColor);
+                spriteBatch.DrawString(Font, Text, new Vector2(x, y), TextColor);
             }
         }
+
         public object Clone()
         {
             return this.MemberwiseClone() as Button;

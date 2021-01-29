@@ -1,29 +1,35 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using System;
-using System.Collections.Generic;
-
-namespace Ludos.Engine.Graphics
+﻿namespace Ludos.Engine.Graphics
 {
+    using System;
+    using System.Collections.Generic;
+    using Microsoft.Xna.Framework;
+    using Microsoft.Xna.Framework.Graphics;
+
     public class ProceduralTexture : GUIComponent, ICloneable
     {
         private readonly GraphicsDevice _graphicsDevice;
-        public Color[] TextureColors { get; set; }
-        public Color BorderColor { get; set; }
-        public int BorderWidth { get; set; } = 0;
-        public float Transparancy { get; set; } = 1;
-        public override Rectangle Rectangle { get; set; }
-        public override Vector2 Position
-        {
-            get => Rectangle.Location.ToVector2();
-            set => Rectangle = new Rectangle((int)value.X, (int)value.Y, Rectangle.Width, Rectangle.Height);
-        }
 
         public ProceduralTexture(GraphicsDevice graphicsDevice, Rectangle area)
         {
             _graphicsDevice = graphicsDevice;
             Rectangle = area;
             Position = new Vector2(area.X, area.Y);
+        }
+
+        public Color[] TextureColors { get; set; }
+
+        public Color BorderColor { get; set; }
+
+        public int BorderWidth { get; set; } = 0;
+
+        public float Transparancy { get; set; } = 1;
+
+        public override Rectangle Rectangle { get; set; }
+
+        public override Vector2 Position
+        {
+            get => Rectangle.Location.ToVector2();
+            set => Rectangle = new Rectangle((int)value.X, (int)value.Y, Rectangle.Width, Rectangle.Height);
         }
 
         public override void Update(GameTime gameTime)
@@ -42,11 +48,12 @@ namespace Ludos.Engine.Graphics
             }
 
             var textures = new List<Texture2D>();
-            
             var newHeight = size.Y / TextureColors.Length;
 
             foreach (var c in TextureColors)
+            {
                 textures.Add(Utilities.Utilities.CreateTexture2D(_graphicsDevice, new Point(size.X, newHeight), c, Transparancy));
+            }
 
             var texturePosition = Position + new Vector2(BorderWidth, BorderWidth);
 

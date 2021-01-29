@@ -1,35 +1,33 @@
-﻿using FuncWorks.XNA.XTiled;
-using Ludos.Engine.Model.World;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace Ludos.Engine.Managers
+﻿namespace Ludos.Engine.Managers
 {
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.Linq;
+    using FuncWorks.XNA.XTiled;
+    using Ludos.Engine.Model.World;
+    using Microsoft.Xna.Framework;
+    using Microsoft.Xna.Framework.Content;
+    using Rectangle = Microsoft.Xna.Framework.Rectangle;
+
     public class TMXManager
     {
-        public Map CurrentMap { get => _maps [_currentLevelIndex]; }
-        public TmxMapInfo CurrentMapInfo { get => _mapsInfo[_currentLevelIndex]; }
-
-        public List<MovingPlatform> MovingPlatforms { get; private set; }
-
-        private int _currentLevelIndex;
         private readonly List<Map> _maps;
-        private readonly List<TmxMapInfo> _mapsInfo;
+        private readonly List<TMXMapInfo> _mapsInfo;
+        private int _currentLevelIndex;
         private Dictionary<string, int> _layerIndexInfo;
 
-        public TMXManager(ContentManager content, List<TmxMapInfo> mapsInfo)
+        public TMXManager(ContentManager content, List<TMXMapInfo> mapsInfo)
         {
             _maps = new List<Map>();
             _mapsInfo = mapsInfo;
-            _currentLevelIndex = 0;
 
-            LoadMaps(content);
-            PopulateLayerNames();
-            AssignObjectLayers();
-            LoadMovingPlatforms();
+            LoadTmxFiles(content);
+            LoadMap(mapsInfo.First().Name);
         }
+
+        public Map CurrentMap { get => _maps[_currentLevelIndex]; }
+        public TMXMapInfo CurrentMapInfo { get => _mapsInfo[_currentLevelIndex]; }
+        public List<MovingPlatform> MovingPlatforms { get; private set; }
 
         public void LoadMap(string mapName)
         {
@@ -53,12 +51,12 @@ namespace Ludos.Engine.Managers
             return _layerIndexInfo[layerName];
         }
 
-        public IEnumerable<MapObject> GetObjectsInRegion(string layerName, System.Drawing.RectangleF region)
+        public IEnumerable<MapObject> GetObjectsInRegion(string layerName, RectangleF region)
         {
             return CurrentMap.GetObjectsInRegion(_layerIndexInfo[layerName], region);
         }
 
-        public IEnumerable<MapObject> GetObjectsInRegion(string layerName, System.Drawing.RectangleF region, KeyValuePair<string, string> property)
+        public IEnumerable<MapObject> GetObjectsInRegion(string layerName, RectangleF region, KeyValuePair<string, string> property)
         {
             var objectsInRegion = CurrentMap.GetObjectsInRegion(_layerIndexInfo[layerName], region);
             return objectsInRegion.Any() ? objectsInRegion.Where(x => x.Properties.ContainsKey(property.Key) && x.Properties[property.Key].Value == property.Value) : new List<MapObject>();
@@ -69,14 +67,14 @@ namespace Ludos.Engine.Managers
             return CurrentMap.GetObjectsInRegion(_layerIndexInfo[layerName], region);
         }
 
-        private void LoadMaps(ContentManager content)
+        private void LoadTmxFiles(ContentManager content)
         {
             foreach (var info in _mapsInfo)
             {
                 _maps.Add(TMXContentProcessor.LoadTMX(info.Path + info.Name, info.ResourcePath, content));
             }
         }
-        
+
         private void PopulateLayerNames()
         {
             var tempIndexVal = 0;
@@ -94,13 +92,13 @@ namespace Ludos.Engine.Managers
                 }
             }
         }
-        
+
         private void AssignObjectLayers()
         {
             for (int i = 0; i < _maps[_currentLevelIndex].ObjectLayers.Count; i++)
             {
                 var layerName = _maps[_currentLevelIndex].ObjectLayers[i].Name;
-                
+
                 if (_layerIndexInfo.ContainsKey(layerName))
                 {
                     _layerIndexInfo[layerName] = i;
@@ -117,14 +115,5 @@ namespace Ludos.Engine.Managers
                 MovingPlatforms.Add(new MovingPlatform(mapObject.Polyline, _mapsInfo[_currentLevelIndex].MovingPlatformSize));
             }
         }
-    }
-
-    public struct TmxMapInfo
-    {
-        public string Path;
-        public string ResourcePath;
-        public string Name;
-        public List<string> NonDefaultLayerNames;
-        public Point MovingPlatformSize;
     }
 }

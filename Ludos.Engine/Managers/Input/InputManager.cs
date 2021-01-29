@@ -1,11 +1,13 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
-using System;
-using System.Collections.Generic;
-using SD = System.Drawing;
-
-namespace Ludos.Engine.Managers
+﻿namespace Ludos.Engine.Managers
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using Microsoft.Xna.Framework;
+    using Microsoft.Xna.Framework.Input;
+    using Point = Microsoft.Xna.Framework.Point;
+    using Rectangle = Microsoft.Xna.Framework.Rectangle;
+
     public class InputManager
     {
         private KeyboardState _keyboardState;
@@ -17,16 +19,16 @@ namespace Ludos.Engine.Managers
 
         private MouseState _mouseState;
         private MouseState _prevMoseState;
-        
-        private SD.Size _defaultPreferredBackBuffer;
+
+        private Size _defaultPreferredBackBuffer;
         private Rectangle _clientBounds;
 
-        public Dictionary<string, Input> UserControls { get; set; }
-
-        public InputManager(SD.Size defaultPreferredBackBuffer)
+        public InputManager(Size defaultPreferredBackBuffer)
         {
             _defaultPreferredBackBuffer = defaultPreferredBackBuffer;
         }
+
+        public Dictionary<string, Input> UserControls { get; set; }
 
         public void Update(Rectangle clientBounds)
         {
@@ -47,7 +49,7 @@ namespace Ludos.Engine.Managers
         }
 
         public bool LeftClicked(Rectangle target, int scale = 1)
-        {  
+        {
             return IsHovering(target, scale) && _prevMoseState.LeftButton == ButtonState.Pressed && _mouseState.LeftButton == ButtonState.Released;
         }
 

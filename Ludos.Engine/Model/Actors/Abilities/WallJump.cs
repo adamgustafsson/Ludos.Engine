@@ -1,30 +1,29 @@
-﻿using Microsoft.Xna.Framework;
-using System.Diagnostics;
-
-
-namespace Ludos.Engine.Model
+﻿namespace Ludos.Engine.Model
 {
+    using System.Diagnostics;
+    using Microsoft.Xna.Framework;
+
     internal class WallJump : IAbility
     {
-        public bool IsWallClinging { get; set; }
-        public bool IsWallJumping { get; set; }
-        public Stopwatch WallJumpTimer { get; set; }
-        public Stopwatch WallClingReleaseCd { get; set; }
-        public ClingDir ClingDirection { get; set; }
-        public bool AbilityEnabled { get; set; }
-
-        public enum ClingDir
-        {
-            Right = 1,
-            Left = -1
-        }
-
         public WallJump()
         {
             AbilityEnabled = true;
             WallClingReleaseCd = new Stopwatch();
             WallJumpTimer = new Stopwatch();
         }
+
+        public enum ClingDir
+        {
+            Right = 1,
+            Left = -1,
+        }
+
+        public bool IsWallClinging { get; set; }
+        public bool IsWallJumping { get; set; }
+        public Stopwatch WallJumpTimer { get; set; }
+        public Stopwatch WallClingReleaseCd { get; set; }
+        public ClingDir ClingDirection { get; set; }
+        public bool AbilityEnabled { get; set; }
 
         public Vector2 CalculatVelocity(Vector2 currentVelocity, Vector2 actorSpeed, bool jumpInitiated, ref Vector2 direction, ref float currentAcceleration, ref bool useDefaultYVelocity, float wallJumpVelocity = 25f)
         {
@@ -107,7 +106,6 @@ namespace Ludos.Engine.Model
         {
             ResetWallClinging();
             ResetWallJumping();
-
         }
     }
 }

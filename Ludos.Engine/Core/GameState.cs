@@ -7,19 +7,23 @@
 
     public abstract class GameState
     {
-        protected ContentManager _content;
-        protected GraphicsDevice _graphicsDevice;
-        protected LudosGame _game;
-        protected InputManager _inputManager;
         public GameState(LudosGame game, GraphicsDevice graphicsDevice, ContentManager content, InputManager inputManager)
         {
-            _game = game;
-            _graphicsDevice = graphicsDevice;
-            _content = content;
-            _inputManager = inputManager;
+            Game = game;
+            Graphics = graphicsDevice;
+            Content = content;
+            InputManager = inputManager;
         }
+
+        protected ContentManager Content { get; }
+        protected GraphicsDevice Graphics { get; }
+        protected LudosGame Game { get; }
+        protected InputManager InputManager { get; }
+
         public abstract void Update(GameTime gameTime);
+
         public abstract void PostUpdate(GameTime gameTime);
+
         public abstract void Draw(GameTime gameTime, SpriteBatch spriteBatch);
     }
 }

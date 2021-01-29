@@ -1,29 +1,14 @@
-﻿using Microsoft.Xna.Framework;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-
-namespace Ludos.Engine.Model
+﻿namespace Ludos.Engine.Model
 {
-    public class Actor
-    {
-        public Vector2 Velocity;
-        public RectangleF Bounds;
-        public RectangleF BottomDetectBounds;
-        protected bool _onGround;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.Linq;
+    using Microsoft.Xna.Framework;
+    using Point = Microsoft.Xna.Framework.Point;
 
+    public abstract class Actor
+    {
         private Direction _previousDirection;
-        public Vector2 Position
-        {
-            get => new Vector2(Bounds.X, Bounds.Y);
-            set => Bounds.Location = new PointF(value.X, value.Y);
-        }
-        public float Gravity { get; set; }
-        public Vector2 Speed { get; set; } = Vector2.Zero;
-        public State CurrentState { get; private set; }
-        public Direction CurrentDirection { get; private set; } = Direction.Right;
-        public bool OnLadder { get; set; }
-        public List<IAbility> Abilities { get; set; } = new List<IAbility>();
 
         public enum State
         {
@@ -31,27 +16,36 @@ namespace Ludos.Engine.Model
             Falling = 1,
             Idle = 3,
             WallClinging = 4,
-            //MovingRight = 5,
-            //MovingLeft = 6,
             Running = 5,
             Climbing = 6,
-            //ClimbingDown = 7,
-            ClimbingIdle = 8
-        };
+            ClimbingIdle = 8,
+        }
 
         public enum Direction
         {
             Left = 0,
-            Right =1
+            Right = 1,
         }
+
+        public abstract Vector2 Position { get; set; }
+        public abstract Vector2 Velocity { get; }
+        public abstract RectangleF Bounds { get; }
+        public abstract Point Size { set; }
+
+        public RectangleF BottomDetectBounds { get; set; }
+        public Vector2 Speed { get; set; } = Vector2.Zero;
+        public State CurrentState { get; private set; }
+        public Direction CurrentDirection { get; private set; } = Direction.Right;
+        public float Gravity { get; set; }
+        public bool OnLadder { get; set; }
+        public List<IAbility> Abilities { get; set; } = new List<IAbility>();
+        protected bool OnGround { get; set; }
 
         public void SetState()
         {
             if (Velocity.Y != 0 && OnLadder)
                 CurrentState = State.Climbing;
-            //else if (Velocity.Y > 0 && OnLadder)
-            //    CurrentState = State.ClimbingDown;
-            else if (OnLadder && !_onGround)
+            else if (OnLadder && !OnGround)
                 CurrentState = State.ClimbingIdle;
             else if (Velocity.Y < 0)
                 CurrentState = State.Jumping;
@@ -61,8 +55,6 @@ namespace Ludos.Engine.Model
                 CurrentState = State.Falling;
             else if (Velocity.X != 0)
                 CurrentState = State.Running;
-            //else if (Velocity.X < 0)
-            //    CurrentState = State.MovingLeft;
             else
                 CurrentState = State.Idle;
         }
@@ -73,7 +65,7 @@ namespace Ludos.Engine.Model
 
             if (Velocity.X > 0)
                 CurrentDirection = Direction.Right;
-            else if (Velocity.X < 0 )
+            else if (Velocity.X < 0)
                 CurrentDirection = Direction.Left;
             else if (Velocity.X == 0)
                 CurrentDirection = _previousDirection;

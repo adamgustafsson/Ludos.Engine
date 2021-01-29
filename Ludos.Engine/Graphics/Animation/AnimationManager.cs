@@ -1,16 +1,15 @@
-﻿using Ludos.Engine.Model;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace Ludos.Engine.Graphics
+﻿namespace Ludos.Engine.Graphics
 {
+    using System.Collections.Generic;
+    using System.Linq;
+    using Ludos.Engine.Model;
+    using Microsoft.Xna.Framework;
+    using Microsoft.Xna.Framework.Graphics;
+
     public class AnimationManager
     {
         private readonly Camera2D _camera;
         private readonly Dictionary<Actor.State, Animation> _animations;
-
 
         public AnimationManager(Camera2D camera, Dictionary<Actor.State, Animation> animations)
         {
@@ -35,7 +34,9 @@ namespace Ludos.Engine.Graphics
                     animation.CurrentXFrame++;
 
                     if ((animation.StartFrame.X + animation.CurrentXFrame) >= (animation.StartFrame.X + animation.FrameCount))
+                    {
                         animation.CurrentXFrame = animation.StartFrame.X;
+                    }
                 }
             }
 
@@ -51,24 +52,20 @@ namespace Ludos.Engine.Graphics
 
             foreach (var animation in visibleAnimations.Where(x => x.Key == x.Value.Actor.CurrentState).Select(x => x.Value))
             {
-
-                if (animation.Actor.CurrentState == Actor.State.Jumping)
-                {
-                    var test = 1;
-                }
-
-                spriteBatch.Draw(animation.Texture,
-                             _camera.VisualizeCordinates(animation.Position),
-                             new Rectangle((animation.StartFrame.X + animation.CurrentXFrame) * animation.FrameWidth,
-                                           animation.StartFrame.Y * animation.FrameHeight,
-                                           animation.FrameWidth,
-                                           animation.FrameHeight),
-                             Color.White,
-                             rotation: 0,
-                             origin: Vector2.Zero,
-                             scale: animation.Scale,
-                             animation.Actor.CurrentDirection == Actor.Direction.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None,
-                             layerDepth: 0);
+                spriteBatch.Draw(
+                    animation.Texture,
+                    _camera.VisualizeCordinates(animation.Position),
+                    new Rectangle(
+                        (animation.StartFrame.X + animation.CurrentXFrame) * animation.FrameWidth,
+                        animation.StartFrame.Y * animation.FrameHeight,
+                        animation.FrameWidth,
+                        animation.FrameHeight),
+                    Color.White,
+                    rotation: 0,
+                    origin: Vector2.Zero,
+                    scale: animation.Scale,
+                    animation.Actor.CurrentDirection == Actor.Direction.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None,
+                    layerDepth: 0);
             }
         }
     }
