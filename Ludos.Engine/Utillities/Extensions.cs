@@ -1,9 +1,9 @@
 ﻿namespace Ludos.Engine.Utilities
 {
     using System;
-    using System.Drawing;
     using Microsoft.Xna.Framework;
-    using Rectangle = Microsoft.Xna.Framework.Rectangle;
+    using PointF = System.Drawing.PointF;
+    using RectangleF = System.Drawing.RectangleF;
 
     internal static class Extensions
     {

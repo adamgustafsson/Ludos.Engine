@@ -1,9 +1,9 @@
 ﻿namespace Ludos.Engine.Model.World
 {
-    using System.Drawing;
     using FuncWorks.XNA.XTiled;
     using Microsoft.Xna.Framework;
-    using Point = Microsoft.Xna.Framework.Point;
+    using PointF = System.Drawing.PointF;
+    using RectangleF = System.Drawing.RectangleF;
 
     public class MovingPlatform
     {

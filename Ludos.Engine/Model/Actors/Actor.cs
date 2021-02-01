@@ -1,10 +1,9 @@
 ﻿namespace Ludos.Engine.Model
 {
     using System.Collections.Generic;
-    using System.Drawing;
     using System.Linq;
     using Microsoft.Xna.Framework;
-    using Point = Microsoft.Xna.Framework.Point;
+    using RectangleF = System.Drawing.RectangleF;
 
     public abstract class Actor
     {

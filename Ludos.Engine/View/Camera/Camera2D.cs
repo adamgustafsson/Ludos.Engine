@@ -1,11 +1,10 @@
 ﻿namespace Ludos.Engine.Graphics
 {
-    using System.Drawing;
     using Ludos.Engine.Model;
     using Ludos.Engine.Utilities;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
-    using Rectangle = Microsoft.Xna.Framework.Rectangle;
+    using RectangleF = System.Drawing.RectangleF;
 
     public class Camera2D
     {

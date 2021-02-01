@@ -1,13 +1,14 @@
 ﻿namespace Ludos.Engine.Model
 {
     using System.Collections.Generic;
-    using System.Drawing;
     using System.Linq;
     using FuncWorks.XNA.XTiled;
     using Ludos.Engine.Managers;
     using Ludos.Engine.Utilities;
     using Microsoft.Xna.Framework;
-    using Point = Microsoft.Xna.Framework.Point;
+    using PointF = System.Drawing.PointF;
+    using RectangleF = System.Drawing.RectangleF;
+    using SizeF = System.Drawing.SizeF;
 
     public class LudosPlayer : Actor
     {
@@ -121,7 +122,7 @@
 
         private void CalculateCollision()
         {
-            var collisionRects = _tmxManager.GetObjectsInRegion(World.DefaultLayerInfo.GROUND_COLLISION, _bounds.Round()).Where(x => x.Type != "platform");
+            var collisionRects = _tmxManager.GetObjectsInRegion(World.TmxDefaultLayerInfo.ObjectLayerWorld, _bounds.Round()).Where(x => x.Type != "platform");
 
             foreach (var collisionRect in collisionRects)
             {
@@ -169,7 +170,7 @@
             {
                 var colDetectionRect = _bounds;
                 colDetectionRect.Inflate(0.2f, 0.2f);
-                var collisionRectsInflateOne = _tmxManager.GetObjectsInRegion(World.DefaultLayerInfo.GROUND_COLLISION, colDetectionRect);
+                var collisionRectsInflateOne = _tmxManager.GetObjectsInRegion(World.TmxDefaultLayerInfo.ObjectLayerWorld, colDetectionRect);
 
                 if (!collisionRectsInflateOne.Any(x => (x.Bounds.Top == _bounds.Bottom)))
                 {
@@ -207,7 +208,7 @@
                 }
             }
 
-            var ladders = _tmxManager.GetObjectsInRegion(World.DefaultLayerInfo.INTERACTABLE_OBJECTS, ladderDetectionBounds).Where(x => x.Type == "ladder");
+            var ladders = _tmxManager.GetObjectsInRegion(World.TmxDefaultLayerInfo.ObjectLayerInteractableObjects, ladderDetectionBounds).Where(x => x.Type == "ladder");
             _ladderIsAvailable = ladders.Any();
 
             if (!_ladderIsAvailable)

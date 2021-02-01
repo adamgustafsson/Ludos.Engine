@@ -1,13 +1,14 @@
 ﻿namespace Ludos.Engine.Managers
 {
+    using System;
     using System.Collections.Generic;
-    using System.Drawing;
     using System.Linq;
     using FuncWorks.XNA.XTiled;
     using Ludos.Engine.Model.World;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Content;
-    using Rectangle = Microsoft.Xna.Framework.Rectangle;
+    using Microsoft.Xna.Framework.Graphics;
+    using RectangleF = System.Drawing.RectangleF;
 
     public class TMXManager
     {
@@ -15,6 +16,7 @@
         private readonly List<TMXMapInfo> _mapsInfo;
         private int _currentLevelIndex;
         private Dictionary<string, int> _layerIndexInfo;
+        private Map _currentMap;
 
         public TMXManager(ContentManager content, List<TMXMapInfo> mapsInfo)
         {
@@ -22,20 +24,32 @@
             _mapsInfo = mapsInfo;
 
             LoadTmxFiles(content);
-            LoadMap(mapsInfo.First().Name);
+            LoadMap(tmxMapIndex: 0);
         }
 
-        public Map CurrentMap { get => _maps[_currentLevelIndex]; }
-        public TMXMapInfo CurrentMapInfo { get => _mapsInfo[_currentLevelIndex]; }
+        public string CurrentMapName { get => System.IO.Path.GetFileName(_mapsInfo[_currentLevelIndex].TmxFilePath).Replace(".tmx", string.Empty); }
         public List<MovingPlatform> MovingPlatforms { get; private set; }
 
-        public void LoadMap(string mapName)
+        public void LoadMap(int tmxMapIndex)
         {
-            var map = _mapsInfo.Where(x => x.Name == mapName).FirstOrDefault();
-            _currentLevelIndex = _mapsInfo.IndexOf(map);
+            _currentLevelIndex = tmxMapIndex;
+            _currentMap = _maps[_currentLevelIndex];
             PopulateLayerNames();
-            AssignObjectLayers();
+            AssignTileLayerIdexes();
+            AssignObjectLayerIdexes();
             LoadMovingPlatforms();
+        }
+
+        public void LoadMap(string tmxMapName)
+        {
+            var map = _mapsInfo.Where(x => x.TmxFilePath.ToLower().Contains(tmxMapName.ToLower())).FirstOrDefault();
+
+            if (map.Equals(default(TMXMapInfo)))
+            {
+                throw new Exception(string.Format("Tmx file named {0} could not be found.", tmxMapName));
+            }
+
+            LoadMap(_mapsInfo.IndexOf(map));
         }
 
         public void Update(GameTime gameTime)
@@ -53,47 +67,83 @@
 
         public IEnumerable<MapObject> GetObjectsInRegion(string layerName, RectangleF region)
         {
-            return CurrentMap.GetObjectsInRegion(_layerIndexInfo[layerName], region);
+            return _currentMap.GetObjectsInRegion(_layerIndexInfo[layerName], region);
         }
 
         public IEnumerable<MapObject> GetObjectsInRegion(string layerName, RectangleF region, KeyValuePair<string, string> property)
         {
-            var objectsInRegion = CurrentMap.GetObjectsInRegion(_layerIndexInfo[layerName], region);
+            var objectsInRegion = _currentMap.GetObjectsInRegion(_layerIndexInfo[layerName], region);
             return objectsInRegion.Any() ? objectsInRegion.Where(x => x.Properties.ContainsKey(property.Key) && x.Properties[property.Key].Value == property.Value) : new List<MapObject>();
         }
 
         public IEnumerable<MapObject> GetObjectsInRegion(string layerName, Rectangle region)
         {
-            return CurrentMap.GetObjectsInRegion(_layerIndexInfo[layerName], region);
+            return _currentMap.GetObjectsInRegion(_layerIndexInfo[layerName], region);
+        }
+
+        public void DrawTileLayers(SpriteBatch spriteBatch, RectangleF region, float layerDepth)
+        {
+            for (int i = 0; i < _maps[_currentLevelIndex].TileLayers.Count; i++)
+            {
+                _currentMap.DrawLayer(spriteBatch, i, region, layerDepth);
+            }
+        }
+
+        public void DrawTileLayer(SpriteBatch spriteBatch, string layerName, RectangleF region, float layerDepth)
+        {
+            _currentMap.DrawLayer(spriteBatch, _layerIndexInfo[layerName], region, layerDepth);
+        }
+
+        public void DrawObjectLayer(SpriteBatch spriteBatch, string layerName, Rectangle region, float layerDepth)
+        {
+            _currentMap.DrawObjectLayer(spriteBatch, _layerIndexInfo[layerName], region, layerDepth);
         }
 
         private void LoadTmxFiles(ContentManager content)
         {
             foreach (var info in _mapsInfo)
             {
-                _maps.Add(TMXContentProcessor.LoadTMX(info.Path + info.Name, info.ResourcePath, content));
+                _maps.Add(TMXContentProcessor.LoadTMX(info.TmxFilePath, info.ResourcePath, content));
             }
         }
 
         private void PopulateLayerNames()
         {
-            var tempIndexVal = 0;
+            var unassignedIndex = -1;
 
-            _layerIndexInfo = new Dictionary<string, int>();
-            _layerIndexInfo.Add(DefaultLayerInfo.GROUND_COLLISION, tempIndexVal);
-            _layerIndexInfo.Add(DefaultLayerInfo.WATER_COLLISION, tempIndexVal);
-            _layerIndexInfo.Add(DefaultLayerInfo.INTERACTABLE_OBJECTS, tempIndexVal);
+            _layerIndexInfo = new Dictionary<string, int>
+            {
+                { TmxDefaultLayerInfo.ObjectLayerWorld, unassignedIndex },
+                { TmxDefaultLayerInfo.ObjectLayerWater, unassignedIndex },
+                { TmxDefaultLayerInfo.ObjectLayerInteractableObjects, unassignedIndex },
+                { TmxDefaultLayerInfo.TileLayerForeground, unassignedIndex },
+                { TmxDefaultLayerInfo.TileLayerWorld, unassignedIndex },
+                { TmxDefaultLayerInfo.TileLayerBackGround, unassignedIndex },
+            };
 
             if (_mapsInfo[_currentLevelIndex].NonDefaultLayerNames != null)
             {
                 foreach (var name in _mapsInfo[_currentLevelIndex].NonDefaultLayerNames)
                 {
-                    _layerIndexInfo.Add(name, tempIndexVal);
+                    _layerIndexInfo.Add(name, unassignedIndex);
                 }
             }
         }
 
-        private void AssignObjectLayers()
+        private void AssignTileLayerIdexes()
+        {
+            for (int i = 0; i < _maps[_currentLevelIndex].TileLayers.Count; i++)
+            {
+                var layerName = _maps[_currentLevelIndex].TileLayers[i].Name;
+
+                if (_layerIndexInfo.ContainsKey(layerName))
+                {
+                    _layerIndexInfo[layerName] = i;
+                }
+            }
+        }
+
+        private void AssignObjectLayerIdexes()
         {
             for (int i = 0; i < _maps[_currentLevelIndex].ObjectLayers.Count; i++)
             {
@@ -101,6 +151,11 @@
 
                 if (_layerIndexInfo.ContainsKey(layerName))
                 {
+                    if (_layerIndexInfo[layerName] != -1)
+                    {
+                        throw new Exception(string.Format("A layer named '{0}' has already been added.", layerName));
+                    }
+
                     _layerIndexInfo[layerName] = i;
                 }
             }
@@ -110,7 +165,7 @@
         {
             MovingPlatforms = new List<MovingPlatform>();
 
-            foreach (var mapObject in CurrentMap.ObjectLayers[DefaultLayerInfo.GROUND_COLLISION].MapObjects.Where(x => x.Polyline != null))
+            foreach (var mapObject in _currentMap.ObjectLayers[TmxDefaultLayerInfo.ObjectLayerWorld].MapObjects.Where(x => x.Polyline != null))
             {
                 MovingPlatforms.Add(new MovingPlatform(mapObject.Polyline, _mapsInfo[_currentLevelIndex].MovingPlatformSize));
             }

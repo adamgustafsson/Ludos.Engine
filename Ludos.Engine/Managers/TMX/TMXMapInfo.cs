@@ -5,9 +5,8 @@
 
     public struct TMXMapInfo
     {
-        public string Path;
+        public string TmxFilePath;
         public string ResourcePath;
-        public string Name;
         public List<string> NonDefaultLayerNames;
         public Point MovingPlatformSize;
     }

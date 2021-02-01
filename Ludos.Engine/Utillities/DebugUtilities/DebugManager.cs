@@ -1,15 +1,13 @@
 ﻿namespace Ludos.Engine.Utilities.Debug
 {
-    using System.Drawing;
     using Ludos.Engine.Graphics;
     using Ludos.Engine.Managers;
     using Ludos.Engine.Model;
+    using Ludos.Engine.Model.World;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Content;
     using Microsoft.Xna.Framework.Graphics;
-    using Color = Microsoft.Xna.Framework.Color;
-    using Point = Microsoft.Xna.Framework.Point;
-    using Rectangle = Microsoft.Xna.Framework.Rectangle;
+    using RectangleF = System.Drawing.RectangleF;
 
     public class DebugManager
     {
@@ -128,7 +126,7 @@
 
             if (_drawCollision)
             {
-                _tmxManager.CurrentMap.DrawObjectLayer(spriteBatch, 0, _camera.CameraBounds.Round(), 0f);
+                _tmxManager.DrawObjectLayer(spriteBatch, TmxDefaultLayerInfo.ObjectLayerWorld, _camera.CameraBounds.Round(), 0f);
 
                 foreach (var platform in _tmxManager.MovingPlatforms)
                 {
