@@ -1,5 +1,6 @@
 ﻿namespace Ludos.Engine.Utilities.Debug
 {
+    using System.Collections.Generic;
     using Ludos.Engine.Graphics;
     using Ludos.Engine.Managers;
     using Ludos.Engine.Model;
@@ -15,10 +16,13 @@
         private readonly SpriteFont _fpsFont;
         private readonly GraphicsDevice _graphicsDevice;
         private readonly InputManager _inputManager;
-        private readonly Texture2D _debugPanel;
         private readonly Camera2D _camera;
         private readonly TMXManager _tmxManager;
         private readonly LudosPlayer _player;
+
+        private readonly Texture2D _debugPanelContainer;
+        private readonly Texture2D _infoContainer;
+        private readonly List<ProceduralTexture> _checkBoxes;
 
         private bool _drawCollision;
         private bool _drawCameraMovementBounds;
@@ -29,23 +33,42 @@
         {
             _fpsCounter = new FpsCounter();
             _fpsFont = content.Load<SpriteFont>("Fonts/Segoe");
-            _debugPanel = content.Load<Texture2D>("Assets/Debug/debugpanel");
             _graphicsDevice = graphicsDevice;
             _inputManager = inputManager;
             _camera = camera;
             _tmxManager = tmxManager;
             _player = player;
+
+            _debugPanelContainer = Utilities.CreateTexture2D(_graphicsDevice, new Point(265, 89), Color.Black, 0.50f);
+            _infoContainer = Utilities.CreateTexture2D(_graphicsDevice, new Point(265, 185), Color.Black, 0.50f);
+
+            var proceduralCheckBox = new ProceduralTexture(_graphicsDevice, new Rectangle(1884, 12, 19, 16))
+            {
+                TextureColors = new Color[] { Color.Black },
+                Transparancy = 0.7f,
+                BorderColor = Color.White,
+                BorderTransparancy = 0.7f,
+                BorderWidth = 2,
+            };
+
+            _checkBoxes = new List<ProceduralTexture>()
+            {
+                proceduralCheckBox,
+                proceduralCheckBox.Clone() as ProceduralTexture,
+                proceduralCheckBox.Clone() as ProceduralTexture,
+                proceduralCheckBox.Clone() as ProceduralTexture,
+            };
+
+            var chkBoxMargin = 19;
+            _checkBoxes[1].Position += new Vector2(0, chkBoxMargin);
+            _checkBoxes[2].Position += new Vector2(0, chkBoxMargin * 2);
+            _checkBoxes[3].Position += new Vector2(0, chkBoxMargin * 3);
         }
 
         public static void DrawRectancgle(GraphicsDevice graphicsDevice, SpriteBatch spriteBatch, int width, int height, Vector2 position, Color? color = null, float transparancy = 1)
         {
             var r = Utilities.CreateTexture2D(graphicsDevice, new Point(width, height), color == null ? Color.White : (Color)color, transparancy);
             spriteBatch.Draw(r, position, Color.White);
-        }
-
-        public void Update(GameTime gameTime)
-        {
-            _fpsCounter.Update(gameTime);
         }
 
         public void DrawRectancgle(SpriteBatch spriteBatch, Rectangle rectangle, Color? color = null, float transparancy = 1, bool visualize = true)
@@ -60,10 +83,58 @@
             DrawRectancgle(_graphicsDevice, spriteBatch, rectangle.Width.ToInt32(), rectangle.Height.ToInt32(), position, color, transparancy);
         }
 
-        public void DrawDebugInfo(GameTime gameTime, SpriteBatch spriteBatch, LudosPlayer player)
+        public void Update(GameTime gameTime)
         {
-            var container = Utilities.CreateTexture2D(_graphicsDevice, new Point(265, 185), Color.Black, 0.50f);
-            spriteBatch.Draw(container, new Vector2(1651, 100), Color.White);
+            _fpsCounter.Update(gameTime);
+        }
+
+        public void DrawDebugPanel(SpriteBatch spriteBatch, GameTime gameTime)
+        {
+            spriteBatch.Draw(_debugPanelContainer, new Vector2(1651, 5), Color.White);
+            spriteBatch.DrawString(_fpsFont, "Show collision", new Vector2(1661, 12f), Color.LightGray);
+            spriteBatch.DrawString(_fpsFont, "Show camera movement bounds", new Vector2(1661, 31f), Color.LightGray);
+            spriteBatch.DrawString(_fpsFont, "Show debug info", new Vector2(1661, 50f), Color.LightGray);
+            spriteBatch.DrawString(_fpsFont, "Show player collision", new Vector2(1661, 69f), Color.LightGray);
+
+            if (_inputManager.LeftClicked(_checkBoxes[0].Rectangle))
+            {
+                _drawCollision = !_drawCollision;
+            }
+
+            if (_inputManager.LeftClicked(_checkBoxes[1].Rectangle))
+            {
+                _drawCameraMovementBounds = !_drawCameraMovementBounds;
+            }
+
+            if (_inputManager.LeftClicked(_checkBoxes[2].Rectangle))
+            {
+                _drawDebugInfo = !_drawDebugInfo;
+            }
+
+            if (_inputManager.LeftClicked(_checkBoxes[3].Rectangle))
+            {
+                _drawPlayerCollision = !_drawPlayerCollision;
+            }
+
+            _checkBoxes[0].Transparancy = _drawCollision ? 0.5f : 1;
+            _checkBoxes[1].Transparancy = _drawCameraMovementBounds ? 0.5f : 1;
+            _checkBoxes[2].Transparancy = _drawDebugInfo ? 0.5f : 1;
+            _checkBoxes[3].Transparancy = _drawPlayerCollision ? 0.5f : 1;
+
+            if (_drawDebugInfo)
+            {
+                DrawDebugInfo(spriteBatch, _player);
+            }
+
+            foreach (var chkBox in _checkBoxes)
+            {
+                chkBox.Draw(gameTime, spriteBatch);
+            }
+        }
+
+        public void DrawDebugInfo(SpriteBatch spriteBatch, LudosPlayer player)
+        {
+            spriteBatch.Draw(_infoContainer, new Vector2(1651, 100), Color.White);
 
             _fpsCounter.DrawFps(spriteBatch, _fpsFont, new Vector2(1658f, 107f), Color.LightGray);
             spriteBatch.DrawString(_fpsFont, "__________________________________________", new Vector2(1661, 167f), Color.LightGray);
@@ -75,54 +146,12 @@
             spriteBatch.DrawString(_fpsFont, "Direction: " + player.CurrentDirection, new Vector2(1661, 263f), Color.LightGray);
         }
 
-        public void DrawDebugPanel(SpriteBatch spriteBatch, GameTime gameTime)
-        {
-            spriteBatch.Draw(_debugPanel, new Vector2(1651, 5), null, Color.White, 0f, Vector2.Zero, 1, SpriteEffects.None, 0f);
-
-            var chkBoxMargin = 19;
-            var showCollisionChkbox = new Rectangle(1884, 12, 19, 16);
-            var showCameraMovementBoundsChkbox = showCollisionChkbox.AdjustLocation(0, chkBoxMargin);
-            var showDebugInfoChkbox = showCameraMovementBoundsChkbox.AdjustLocation(0, chkBoxMargin);
-            var showPlayerCollisionChkbox = showDebugInfoChkbox.AdjustLocation(0, chkBoxMargin);
-
-            if (_inputManager.LeftClicked(showCollisionChkbox))
-                _drawCollision = !_drawCollision;
-
-            if (_inputManager.LeftClicked(showCameraMovementBoundsChkbox))
-                _drawCameraMovementBounds = !_drawCameraMovementBounds;
-
-            if (_inputManager.LeftClicked(showDebugInfoChkbox))
-                _drawDebugInfo = !_drawDebugInfo;
-
-            if (_inputManager.LeftClicked(showPlayerCollisionChkbox))
-                _drawPlayerCollision = !_drawPlayerCollision;
-
-            if (_drawDebugInfo)
-            {
-                DrawRectancgle(spriteBatch, showDebugInfoChkbox, Color.White, transparancy: 0.50f, visualize: false);
-                DrawDebugInfo(gameTime, spriteBatch, _player);
-            }
-
-            if (_drawCameraMovementBounds)
-            {
-                DrawRectancgle(spriteBatch, showCameraMovementBoundsChkbox, Color.White, transparancy: 0.50f, visualize: false);
-            }
-
-            if (_drawCollision)
-            {
-                DrawRectancgle(spriteBatch, showCollisionChkbox, Color.White, transparancy: 0.50f, visualize: false);
-            }
-
-            if (_drawPlayerCollision)
-            {
-                DrawRectancgle(spriteBatch, showPlayerCollisionChkbox, Color.White, transparancy: 0.50f, visualize: false);
-            }
-        }
-
         public void DrawScaledContent(SpriteBatch spriteBatch)
         {
             if (_drawCameraMovementBounds)
+            {
                 DrawRectancgle(spriteBatch, _camera.MovementBounds, transparancy: 0.50f);
+            }
 
             if (_drawCollision)
             {

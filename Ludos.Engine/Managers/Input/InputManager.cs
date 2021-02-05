@@ -24,6 +24,7 @@
         public InputManager(Size defaultPreferredBackBuffer)
         {
             _defaultPreferredBackBuffer = defaultPreferredBackBuffer;
+            _clientBounds = new Rectangle(0, 0, _defaultPreferredBackBuffer.Width, _defaultPreferredBackBuffer.Height);
         }
 
         public Dictionary<string, Input> UserControls { get; set; }

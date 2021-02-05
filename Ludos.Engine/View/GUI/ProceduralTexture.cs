@@ -24,6 +24,8 @@
 
         public float Transparancy { get; set; } = 1;
 
+        public float BorderTransparancy { get; set; } = 1;
+
         public override Rectangle Rectangle { get; set; }
 
         public override Vector2 Position
@@ -42,7 +44,7 @@
 
             if (BorderWidth > 0)
             {
-                var borderTexture = Utilities.Utilities.CreateTexture2D(_graphicsDevice, Rectangle.Size, BorderColor, Transparancy);
+                var borderTexture = Utilities.Utilities.CreateTexture2D(_graphicsDevice, Rectangle.Size, BorderColor, BorderTransparancy);
                 spriteBatch.Draw(borderTexture, Position, Color.White);
                 size = Rectangle.Size - new Point(BorderWidth * 2, BorderWidth * 2);
             }
@@ -66,7 +68,7 @@
 
         public object Clone()
         {
-            return this.MemberwiseClone() as ProceduralButton;
+            return this.MemberwiseClone() as ProceduralTexture;
         }
     }
 }

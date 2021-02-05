@@ -1,6 +1,8 @@
 ﻿namespace Ludos.Engine.Core
 {
     using System;
+    using System.Collections.Generic;
+    using Ludos.Engine.Managers;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
 
@@ -9,6 +11,8 @@
         private RenderTarget2D _offScreenRenderTarget;
         private float _aspectRatio;
         private Point _oldWindowSize;
+        private TMXManager _tmxManager;
+        private InputManager _inputManager;
 
         public LudosGame()
         {
@@ -24,12 +28,62 @@
         }
 
         public static int GraphicsScale { get; set; } = 1;
-        public bool GameIsPaused { get; set; }
-        public GameState[] GameStates { get; set; }
+        public static bool GameIsPaused { get; set; }
+        public static GameState[] GameStates { get; set; }
         protected SpriteBatch SpriteBatch { get; private set; }
         protected GraphicsDeviceManager Graphics { get; }
 
-        public void OnResize(object sender, EventArgs e)
+        protected void InitializeTmxManager(List<TMXMapInfo> tmxMapsInfo)
+        {
+            _tmxManager = new TMXManager(Content, tmxMapsInfo);
+            Services.AddService(_tmxManager);
+        }
+
+        protected void InitializeInputManager(Dictionary<string, Input> userControls)
+        {
+            _inputManager = new InputManager(new System.Drawing.Size(Graphics.PreferredBackBufferWidth, Graphics.PreferredBackBufferHeight))
+            {
+                UserControls = userControls,
+            };
+
+            Services.AddService(_inputManager);
+        }
+
+        protected override void Update(GameTime gameTime)
+        {
+            if (!GameIsPaused)
+            {
+                _tmxManager.Update(gameTime);
+            }
+
+            _inputManager.Update(Window.ClientBounds);
+            base.Update(gameTime);
+        }
+
+        protected override void LoadContent()
+        {
+            SpriteBatch = new SpriteBatch(GraphicsDevice);
+            _aspectRatio = GraphicsDevice.Viewport.AspectRatio;
+            _oldWindowSize = new Point(Window.ClientBounds.Width, Window.ClientBounds.Height);
+            _offScreenRenderTarget = new RenderTarget2D(GraphicsDevice, Window.ClientBounds.Width, Window.ClientBounds.Height);
+        }
+
+        protected override bool BeginDraw()
+        {
+            GraphicsDevice.SetRenderTarget(_offScreenRenderTarget);
+            return base.BeginDraw();
+        }
+
+        protected override void EndDraw()
+        {
+            GraphicsDevice.SetRenderTarget(null);
+            SpriteBatch.Begin();
+            SpriteBatch.Draw(_offScreenRenderTarget, GraphicsDevice.Viewport.Bounds, Color.White);
+            SpriteBatch.End();
+            base.EndDraw();
+        }
+
+        private void OnResize(object sender, EventArgs e)
         {
             // Remove this event handler, so we don't call it when we change the window size in here
             Window.ClientSizeChanged -= OnResize;
@@ -55,33 +109,6 @@
 
             // add this event handler back
             Window.ClientSizeChanged += OnResize;
-        }
-
-        public abstract void ChangeState(int gameStateIndex);
-
-        public abstract void LoadMap(string mapName);
-
-        protected override void LoadContent()
-        {
-            SpriteBatch = new SpriteBatch(GraphicsDevice);
-            _aspectRatio = GraphicsDevice.Viewport.AspectRatio;
-            _oldWindowSize = new Point(Window.ClientBounds.Width, Window.ClientBounds.Height);
-            _offScreenRenderTarget = new RenderTarget2D(GraphicsDevice, Window.ClientBounds.Width, Window.ClientBounds.Height);
-        }
-
-        protected override bool BeginDraw()
-        {
-            GraphicsDevice.SetRenderTarget(_offScreenRenderTarget);
-            return base.BeginDraw();
-        }
-
-        protected override void EndDraw()
-        {
-            GraphicsDevice.SetRenderTarget(null);
-            SpriteBatch.Begin();
-            SpriteBatch.Draw(_offScreenRenderTarget, GraphicsDevice.Viewport.Bounds, Color.White);
-            SpriteBatch.End();
-            base.EndDraw();
         }
     }
 }

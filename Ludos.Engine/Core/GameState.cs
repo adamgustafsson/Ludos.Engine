@@ -7,18 +7,7 @@
 
     public abstract class GameState
     {
-        public GameState(LudosGame game, GraphicsDevice graphicsDevice, ContentManager content, InputManager inputManager)
-        {
-            Game = game;
-            Graphics = graphicsDevice;
-            Content = content;
-            InputManager = inputManager;
-        }
-
-        protected ContentManager Content { get; }
-        protected GraphicsDevice Graphics { get; }
-        protected LudosGame Game { get; }
-        protected InputManager InputManager { get; }
+        public abstract bool IsActive { get; set; }
 
         public abstract void Update(GameTime gameTime);
 

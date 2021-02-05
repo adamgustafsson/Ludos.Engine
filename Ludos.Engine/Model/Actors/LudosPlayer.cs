@@ -3,6 +3,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using FuncWorks.XNA.XTiled;
+    using Ludos.Engine.Core;
     using Ludos.Engine.Managers;
     using Ludos.Engine.Utilities;
     using Microsoft.Xna.Framework;
@@ -29,6 +30,11 @@
 
         private float _currentAcceleration = 0.001f;
         private bool _onMovingPlatform;
+
+        public LudosPlayer(Vector2 position, Point size, GameServiceContainer services)
+            : this(position, size, services.GetService<TMXManager>(), services.GetService<InputManager>())
+        {
+        }
 
         public LudosPlayer(Vector2 position, Point size, TMXManager tmxManager, InputManager inputManager)
         {
