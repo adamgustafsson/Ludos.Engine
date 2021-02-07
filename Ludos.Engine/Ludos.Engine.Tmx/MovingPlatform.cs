@@ -1,6 +1,7 @@
 ﻿namespace Ludos.Engine.Tmx
 {
     using FuncWorks.XNA.XTiled;
+    using Ludos.Engine.Actors;
     using Microsoft.Xna.Framework;
     using PointF = System.Drawing.PointF;
     using RectangleF = System.Drawing.RectangleF;
@@ -28,6 +29,7 @@
         public RectangleF DetectionBounds { get => _detectionBounds; }
         public RectangleF Bounds { get => _platform; }
         public PointF Change { get => _change; }
+        public Actor Passenger { get; set; }
 
         public void Update(float a_elapsedTime)
         {
@@ -69,6 +71,11 @@
             _platform.Y = _position.Y;
 
             _detectionBounds = new RectangleF(_platform.X, _platform.Y, _platform.Width, _platform.Height * 0.20f);
+
+            if (Passenger != null)
+            {
+                Passenger.Position = new Vector2(Passenger.Position.X + _change.X, _platform.Y - Passenger.Bounds.Height);
+            }
         }
     }
 }

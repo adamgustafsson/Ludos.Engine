@@ -78,7 +78,7 @@
             SetState();
             SetDirection();
 
-            BottomDetectBounds = new RectangleF(_bounds.X, _bounds.Y + (_bounds.Height * 0.90f), _bounds.Width, _bounds.Height * 0.13f);
+            BottomDetectBounds = new RectangleF(_bounds.X, _bounds.Y + (_bounds.Height * 0.90f), _bounds.Width, _bounds.Height * 0.20f);
 
             if (GetAbility<DoubleJump>()?.AbilityEnabled ?? false)
             {
@@ -102,27 +102,35 @@
             {
                 var platformBounds = mp.Bounds;
 
+                // The small adjustment at the end is done if the platform is moving vertically in order to ensure collision when
+                // doing small jumps on a plafrorm moving upwards.
+                var collisionFromAbove = _lastPosition.Bottom <= mp.Bounds.Top + (mp.Change.Y < 0 ? 2 : 0);
+
                 if (platformBounds.Intersects(_bounds))
                 {
-                    if (mp.DetectionBounds.Intersects(BottomDetectBounds) && !_jumpInitiated)
+                    if (mp.Passenger == null && collisionFromAbove)
                     {
-                        if (mp.Change.Y > 0)
-                        {
-                            _bounds.Y = platformBounds.Top - _bounds.Height;
-                            _bounds.Offset(mp.Change);
-                        }
-                        else
-                        {
-                            _bounds.Offset(mp.Change);
-                            _bounds.Y = platformBounds.Top - _bounds.Height;
-                        }
-
-                        _velocity.Y = _velocity.Y > 0 ? 0 : _velocity.Y;
+                        mp.Passenger = this;
                         GetAbility<WallJump>()?.ResetAbility();
                         GetAbility<DoubleJump>()?.ResetAbility();
-                        _onMovingPlatform = true;
                     }
                 }
+                else if (!platformBounds.Intersects(BottomDetectBounds) && mp.Passenger != null)
+                {
+                    mp.Passenger = null;
+                }
+
+                if (_jumpInitiated)
+                {
+                    mp.Passenger = null;
+                }
+            }
+
+            _onMovingPlatform = _tmxManager.MovingPlatforms.Any(x => x.Passenger != null);
+
+            if (_onMovingPlatform)
+            {
+                _velocity.Y = _velocity.Y > 0 ? 0 : _velocity.Y;
             }
         }
 
