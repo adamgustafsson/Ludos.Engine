@@ -31,6 +31,8 @@
         private float _currentAcceleration = 0.001f;
         private bool _onMovingPlatform;
 
+        private bool _isDiving;
+
         public LudosPlayer(Vector2 position, Point size, GameServiceContainer services)
             : this(position, size, services.GetService<TMXManager>(), services.GetService<InputManager>())
         {
@@ -48,8 +50,9 @@
             _inputManager = inputManager;
             _startPositon = position;
 
-            Abilities.AddRange(new List<IAbility>() { new WallJump(), new DoubleJump() });
+            Abilities.AddRange(new List<IAbility>() { new WallJump(), new DoubleJump(), new Swimming(Gravity, Speed) });
             //GetAbility<DoubleJump>().AbilityEnabled = false;
+            //GetAbility<Swimming>().AbilityEnabled = false;
         }
 
         public float HorizontalAcceleration { get; set; } = 0.15f;
@@ -74,6 +77,7 @@
 
             CalculateCollision();
             CalculateLadderCollision();
+            CalculateWaterCollision(elapsedTime);
             CalculateMovingPlatformCollision();
             SetState();
             SetDirection();
@@ -92,46 +96,6 @@
         public void ResetToStartPosition()
         {
             Position = _startPositon;
-        }
-
-        private void CalculateMovingPlatformCollision()
-        {
-            _onMovingPlatform = false;
-
-            foreach (var mp in _tmxManager.MovingPlatforms)
-            {
-                var platformBounds = mp.Bounds;
-
-                // The small adjustment at the end is done if the platform is moving vertically in order to ensure collision when
-                // doing small jumps on a plafrorm moving upwards.
-                var collisionFromAbove = _lastPosition.Bottom <= mp.Bounds.Top + (mp.Change.Y < 0 ? 2 : 0);
-
-                if (platformBounds.Intersects(_bounds))
-                {
-                    if (mp.Passenger == null && collisionFromAbove)
-                    {
-                        mp.Passenger = this;
-                        GetAbility<WallJump>()?.ResetAbility();
-                        GetAbility<DoubleJump>()?.ResetAbility();
-                    }
-                }
-                else if (!platformBounds.Intersects(BottomDetectBounds) && mp.Passenger != null)
-                {
-                    mp.Passenger = null;
-                }
-
-                if (_jumpInitiated)
-                {
-                    mp.Passenger = null;
-                }
-            }
-
-            _onMovingPlatform = _tmxManager.MovingPlatforms.Any(x => x.Passenger != null);
-
-            if (_onMovingPlatform)
-            {
-                _velocity.Y = _velocity.Y > 0 ? 0 : _velocity.Y;
-            }
         }
 
         private void CalculateCollision()
@@ -245,9 +209,123 @@
             }
         }
 
+        private void CalculateWaterCollision(float elapsedTime)
+        {
+            if ((GetAbility<Swimming>()?.AbilityEnabled ?? false) == false)
+            {
+                return;
+            }
+
+            var water = _tmxManager.GetObjectsInRegion(TMXDefaultLayerInfo.ObjectLayerWater, _bounds);
+            var isCollidingWithWater = water.Any();
+
+            if (!GetAbility<Swimming>().IsInWater && isCollidingWithWater)
+            {
+                GetAbility<Swimming>().IsInWater = true;
+                Speed = new Vector2(Speed.X * 0.85f, Speed.Y);
+
+                if (GetAbility<WallJump>()?.AbilityEnabled ?? false)
+                {
+                    GetAbility<WallJump>().AbilityTemporarilyDisabled = true;
+                }
+            }
+            else if ((_jumpInitiated && isCollidingWithWater) || (GetAbility<Swimming>().IsInWater && !isCollidingWithWater))
+            {
+                GetAbility<Swimming>().IsInWater = false;
+                Speed = GetAbility<Swimming>().DefaultSpeed;
+                GetAbility<DoubleJump>()?.ResetAbility();
+
+                if (GetAbility<WallJump>()?.AbilityTemporarilyDisabled ?? false)
+                {
+                    GetAbility<WallJump>().AbilityTemporarilyDisabled = false;
+                }
+            }
+
+            if (GetAbility<Swimming>().IsInWater)
+            {
+                var waterObjectBounds = water.First().Bounds;
+
+                if (_isDiving)
+                {
+                    Gravity = 300;
+                }
+                else if (_bounds.Center().Y > waterObjectBounds.Top)
+                {
+                    _velocity.Y = 0;
+                    Gravity -= elapsedTime * 1000;
+                }
+                else if (_lastPosition.Y > Position.Y && (_bounds.Center().Y < waterObjectBounds.Top))
+                {
+                    if (Gravity < 500)
+                    {
+                        Gravity = 500;
+                    }
+                    else
+                    {
+                        Gravity += elapsedTime * 1000;
+                    }
+                }
+
+                GetAbility<Swimming>().IsSubmerged = _bounds.Top > waterObjectBounds.Top;
+
+                _isDiving = _inputManager.IsInputDown(InputName.ActionButton1);
+
+                if (GetAbility<Swimming>().IsSubmerged && OnGround && !_isDiving)
+                {
+                    //_velocity.Y = -1f;
+                    Position = new Vector2(Position.X, Position.Y - 0.85f);
+                }
+            }
+            else
+            {
+                GetAbility<Swimming>().IsSubmerged = false;
+                Gravity = GetAbility<Swimming>().DefaultGravity;
+            }
+        }
+
+        private void CalculateMovingPlatformCollision()
+        {
+            _onMovingPlatform = false;
+
+            foreach (var mp in _tmxManager.MovingPlatforms)
+            {
+                var platformBounds = mp.Bounds;
+
+                // The small adjustment at the end is done if the platform is moving vertically in order to ensure collision when
+                // doing small jumps on a plafrorm moving upwards.
+                var collisionFromAbove = _lastPosition.Bottom <= mp.Bounds.Top + (mp.Change.Y < 0 ? 2 : 0);
+
+                if (platformBounds.Intersects(_bounds))
+                {
+                    if (mp.Passenger == null && collisionFromAbove)
+                    {
+                        mp.Passenger = this;
+                        GetAbility<WallJump>()?.ResetAbility();
+                        GetAbility<DoubleJump>()?.ResetAbility();
+                    }
+                }
+                else if (!platformBounds.Intersects(BottomDetectBounds) && mp.Passenger != null)
+                {
+                    mp.Passenger = null;
+                }
+
+                if (_jumpInitiated)
+                {
+                    mp.Passenger = null;
+                }
+            }
+
+            _onMovingPlatform = _tmxManager.MovingPlatforms.Any(x => x.Passenger != null);
+
+            if (_onMovingPlatform)
+            {
+                _velocity.Y = _velocity.Y > 0 ? 0 : _velocity.Y;
+            }
+        }
+
         private void SetGrounded(PointF currentPosition)
         {
-            _bounds.Location = currentPosition;
+            _bounds.Location =currentPosition;
             OnGround = true;
             _velocity.Y = _velocity.Y > 0 ? 0 : _velocity.Y;
 
@@ -304,13 +382,20 @@
             var climbingUp = _inputManager.IsInputDown(InputName.MoveUp) && _ladderIsAvailable ? -Speed.X : 0;
             var climbingDown = _inputManager.IsInputDown(InputName.MoveDown) && _ladderIsAvailable ? -Speed.X : 0;
 
-            var jumpQueueIsOk = JumpQueueIsOk();
-            _jumpInitiated = jumpQueueIsOk && (OnGround || OnLadder || _onMovingPlatform || (GetAbility<WallJump>()?.IsWallClinging ?? false) || (GetAbility<DoubleJump>()?.DoubleJumpAvailable ?? false));
+            var jumpFromWaterAvailable = (GetAbility<Swimming>()?.AbilityEnabled ?? false) && GetAbility<Swimming>().IsInWater && !GetAbility<Swimming>().IsSubmerged;
 
-            if (_jumpInitiated && !OnGround && !OnLadder && !_onMovingPlatform && !(GetAbility<WallJump>()?.IsWallClinging ?? false))
+            var jumpQueueIsOk = JumpQueueIsOk();
+            _jumpInitiated = jumpQueueIsOk && (OnGround || OnLadder || _onMovingPlatform || jumpFromWaterAvailable || (GetAbility<WallJump>()?.IsWallClinging ?? false) || (GetAbility<DoubleJump>()?.DoubleJumpAvailable ?? false));
+
+            if (_jumpInitiated && !OnGround && !OnLadder && !_onMovingPlatform && !(GetAbility<Swimming>()?.IsInWater ?? false) && !(GetAbility<WallJump>()?.IsWallClinging ?? false))
             {
                 GetAbility<DoubleJump>().DoubleJumpAvailable = false;
                 GetAbility<DoubleJump>().DoubleJumpUsed = true;
+            }
+
+            if(_jumpInitiated)
+            {
+                 var test = 2;
             }
 
             var climbingDirection = climbingUp - climbingDown;

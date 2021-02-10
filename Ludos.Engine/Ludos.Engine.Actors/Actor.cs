@@ -18,6 +18,7 @@
             Running = 5,
             Climbing = 6,
             ClimbingIdle = 8,
+            Swimming = 9,
         }
 
         public enum Direction
@@ -46,6 +47,8 @@
                 CurrentState = State.Climbing;
             else if (OnLadder && !OnGround)
                 CurrentState = State.ClimbingIdle;
+            else if (GetAbility<Swimming>()?.IsInWater ?? false)
+                CurrentState = State.Swimming;
             else if (Velocity.Y < 0)
                 CurrentState = State.Jumping;
             else if (GetAbility<WallJump>()?.IsWallClinging ?? false)
