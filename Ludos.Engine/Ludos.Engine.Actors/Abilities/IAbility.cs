@@ -4,6 +4,8 @@
     {
         bool AbilityEnabled { get; set; }
 
+        bool AbilityTemporarilyDisabled { get; set; }
+
         void ResetAbility();
     }
 }

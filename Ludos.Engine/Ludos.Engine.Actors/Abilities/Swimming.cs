@@ -13,8 +13,10 @@
         }
 
         public bool AbilityEnabled { get; set; }
+        public bool AbilityTemporarilyDisabled { get; set; }
         public bool IsInWater { get; set; }
         public bool IsSubmerged { get; set; }
+        public bool IsDiving { get; set; }
         public float DefaultGravity { get; set; }
         public Vector2 DefaultSpeed { get; set; }
 

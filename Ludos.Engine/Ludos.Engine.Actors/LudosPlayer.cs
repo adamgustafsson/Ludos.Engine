@@ -31,8 +31,6 @@
         private float _currentAcceleration = 0.001f;
         private bool _onMovingPlatform;
 
-        private bool _isDiving;
-
         public LudosPlayer(Vector2 position, Point size, GameServiceContainer services)
             : this(position, size, services.GetService<TMXManager>(), services.GetService<InputManager>())
         {
@@ -84,7 +82,9 @@
 
             BottomDetectBounds = new RectangleF(_bounds.X, _bounds.Y + (_bounds.Height * 0.90f), _bounds.Width, _bounds.Height * 0.20f);
 
-            if (GetAbility<DoubleJump>()?.AbilityEnabled ?? false)
+            var test = GetAbility<Swimming>().IsSubmerged;
+
+            if ((GetAbility<DoubleJump>()?.AbilityEnabled ?? false) && !test)
             {
                 if ((CurrentState == State.Jumping || CurrentState == State.Falling) && !GetAbility<DoubleJump>().DoubleJumpUsed)
                 {
@@ -229,7 +229,7 @@
                     GetAbility<WallJump>().AbilityTemporarilyDisabled = true;
                 }
             }
-            else if ((_jumpInitiated && isCollidingWithWater) || (GetAbility<Swimming>().IsInWater && !isCollidingWithWater))
+            else if ((_jumpInitiated && isCollidingWithWater && !GetAbility<Swimming>().IsSubmerged) || (GetAbility<Swimming>().IsInWater && !isCollidingWithWater))
             {
                 GetAbility<Swimming>().IsInWater = false;
                 Speed = GetAbility<Swimming>().DefaultSpeed;
@@ -244,15 +244,16 @@
             if (GetAbility<Swimming>().IsInWater)
             {
                 var waterObjectBounds = water.First().Bounds;
+                GetAbility<Swimming>().IsSubmerged = _bounds.Top > waterObjectBounds.Top;
 
-                if (_isDiving)
+                if (GetAbility<Swimming>().IsDiving)
                 {
-                    Gravity = 300;
+                    Gravity = 100;
                 }
                 else if (_bounds.Center().Y > waterObjectBounds.Top)
                 {
                     _velocity.Y = 0;
-                    Gravity -= elapsedTime * 1000;
+                    Gravity -= elapsedTime * (GetAbility<Swimming>().IsSubmerged ? 2000 : 1000);
                 }
                 else if (_lastPosition.Y > Position.Y && (_bounds.Center().Y < waterObjectBounds.Top))
                 {
@@ -266,13 +267,10 @@
                     }
                 }
 
-                GetAbility<Swimming>().IsSubmerged = _bounds.Top > waterObjectBounds.Top;
+                GetAbility<Swimming>().IsDiving = _inputManager.IsInputDown(InputName.ActionButton1);
 
-                _isDiving = _inputManager.IsInputDown(InputName.ActionButton1);
-
-                if (GetAbility<Swimming>().IsSubmerged && OnGround && !_isDiving)
+                if (GetAbility<Swimming>().IsSubmerged && OnGround && !GetAbility<Swimming>().IsDiving)
                 {
-                    //_velocity.Y = -1f;
                     Position = new Vector2(Position.X, Position.Y - 0.85f);
                 }
             }
@@ -280,6 +278,11 @@
             {
                 GetAbility<Swimming>().IsSubmerged = false;
                 Gravity = GetAbility<Swimming>().DefaultGravity;
+            }
+
+            if (GetAbility<Swimming>().IsSubmerged && (GetAbility<DoubleJump>()?.AbilityEnabled ?? false))
+            {
+                GetAbility<DoubleJump>().JumpUsedOrCanceled();
             }
         }
 
@@ -325,7 +328,7 @@
 
         private void SetGrounded(PointF currentPosition)
         {
-            _bounds.Location =currentPosition;
+            _bounds.Location = currentPosition;
             OnGround = true;
             _velocity.Y = _velocity.Y > 0 ? 0 : _velocity.Y;
 
@@ -382,20 +385,14 @@
             var climbingUp = _inputManager.IsInputDown(InputName.MoveUp) && _ladderIsAvailable ? -Speed.X : 0;
             var climbingDown = _inputManager.IsInputDown(InputName.MoveDown) && _ladderIsAvailable ? -Speed.X : 0;
 
-            var jumpFromWaterAvailable = (GetAbility<Swimming>()?.AbilityEnabled ?? false) && GetAbility<Swimming>().IsInWater && !GetAbility<Swimming>().IsSubmerged;
+            var jumpFromWaterAvailable = (GetAbility<Swimming>()?.AbilityEnabled ?? false) && (GetAbility<Swimming>()?.IsInWater ?? false) && !(GetAbility<Swimming>()?.IsSubmerged ?? false);
 
             var jumpQueueIsOk = JumpQueueIsOk();
             _jumpInitiated = jumpQueueIsOk && (OnGround || OnLadder || _onMovingPlatform || jumpFromWaterAvailable || (GetAbility<WallJump>()?.IsWallClinging ?? false) || (GetAbility<DoubleJump>()?.DoubleJumpAvailable ?? false));
 
-            if (_jumpInitiated && !OnGround && !OnLadder && !_onMovingPlatform && !(GetAbility<Swimming>()?.IsInWater ?? false) && !(GetAbility<WallJump>()?.IsWallClinging ?? false))
+            if (_jumpInitiated && !OnGround && !OnLadder && !_onMovingPlatform && !(GetAbility<WallJump>()?.IsWallClinging ?? false))
             {
-                GetAbility<DoubleJump>().DoubleJumpAvailable = false;
-                GetAbility<DoubleJump>().DoubleJumpUsed = true;
-            }
-
-            if(_jumpInitiated)
-            {
-                 var test = 2;
+                GetAbility<DoubleJump>()?.JumpUsedOrCanceled();
             }
 
             var climbingDirection = climbingUp - climbingDown;
@@ -406,9 +403,12 @@
                 GetAbility<DoubleJump>()?.ResetAbility();
             }
 
+            var isSubmergedInWateraAndGrounded = OnGround && (GetAbility<Swimming>()?.IsSubmerged ?? false);
+            var jumpForce = isSubmergedInWateraAndGrounded ? 0.5f : 1;
+
             return new Vector2(
                 movingLeft - movingRight,
-                _jumpInitiated ? -1 : climbingDirection);
+                _jumpInitiated ? -jumpForce : climbingDirection);
         }
 
         private bool JumpQueueIsOk()

@@ -77,7 +77,7 @@
 
         public T GetAbility<T>()
         {
-            return (T)Abilities.Where(x => x.GetType() == typeof(T) && x.AbilityEnabled == true).FirstOrDefault();
+            return (T)Abilities.Where(x => x.GetType() == typeof(T) && ((x.AbilityTemporarilyDisabled && !x.AbilityEnabled) || x.AbilityEnabled)).FirstOrDefault();
         }
     }
 }
