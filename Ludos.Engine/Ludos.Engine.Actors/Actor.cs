@@ -37,9 +37,9 @@
         public State CurrentState { get; private set; }
         public Direction CurrentDirection { get; private set; } = Direction.Right;
         public List<IAbility> Abilities { get; set; } = new List<IAbility>();
-        protected float Gravity { get; set; }
+        public float Gravity { get; set; }
+        public bool OnGround { get; set; }
         protected bool OnLadder { get; set; }
-        protected bool OnGround { get; set; }
 
         public void SetState()
         {

@@ -48,7 +48,7 @@
             _inputManager = inputManager;
             _startPositon = position;
 
-            Abilities.AddRange(new List<IAbility>() { new WallJump(), new DoubleJump(), new Swimming(Gravity, Speed) });
+            Abilities.AddRange(new List<IAbility>() { new WallJump(), new DoubleJump(), new Swimming(Gravity, Speed, Swimming.DivingBehavior.DiveOnButtonPress) });
             //GetAbility<DoubleJump>().AbilityEnabled = false;
             //GetAbility<Swimming>().AbilityEnabled = false;
         }
@@ -215,76 +215,15 @@
             }
 
             var water = _tmxManager.GetObjectsInRegion(TMXDefaultLayerInfo.ObjectLayerWater, _bounds);
-            var isCollidingWithWater = water.Any();
 
-            if (!GetAbility<Swimming>().IsInWater && isCollidingWithWater)
-            {
-                GetAbility<Swimming>().IsInWater = true;
-                Speed = new Vector2(Speed.X * 0.85f, Speed.Y);
-
-                TemporarilyDisabledAbility<WallJump>();
-            }
-            else if ((_jumpInitiated && isCollidingWithWater && !GetAbility<Swimming>().IsSubmerged) || (GetAbility<Swimming>().IsInWater && !isCollidingWithWater))
-            {
-                GetAbility<Swimming>().IsInWater = false;
-                Speed = GetAbility<Swimming>().DefaultSpeed;
-                GetAbility<DoubleJump>()?.ResetAbility();
-
-                EnableTemporarilyDisabledAbility<WallJump>();
-            }
-
-            if (GetAbility<Swimming>().IsInWater)
-            {
-                var waterObjectBounds = water.First().Bounds;
-                GetAbility<Swimming>().IsSubmerged = _bounds.Top > waterObjectBounds.Top;
-
-                if (GetAbility<Swimming>().IsDiving)
-                {
-                    Gravity = 100;
-
-                    if (_velocity.Y > 100)
-                    {
-                        _velocity.Y = 100;
-                    }
-                }
-                else if (_bounds.Center().Y > waterObjectBounds.Top)
-                {
-                    _velocity.Y = 0;
-                    Gravity -= elapsedTime * (GetAbility<Swimming>().IsSubmerged ? 2000 : 1000);
-                }
-                else if (_lastPosition.Y > Position.Y && (_bounds.Center().Y < waterObjectBounds.Top))
-                {
-                    if (Gravity < 500)
-                    {
-                        Gravity = 500;
-                    }
-                    else
-                    {
-                        Gravity += elapsedTime * 1000;
-                    }
-                }
-
-                GetAbility<Swimming>().IsDiving = _inputManager.IsInputDown(InputName.ActionButton1);
-
-                if (GetAbility<Swimming>().IsSubmerged && OnGround && !GetAbility<Swimming>().IsDiving)
-                {
-                    Position = new Vector2(Position.X, Position.Y - 0.85f);
-                }
-            }
-            else
-            {
-                GetAbility<Swimming>().IsSubmerged = false;
-                Gravity = GetAbility<Swimming>().DefaultGravity;
-            }
-
-            if (GetAbility<Swimming>().IsSubmerged && AbilityIsActive<DoubleJump>())
-            {
-                TemporarilyDisabledAbility<DoubleJump>();
-            }
-            else if (!GetAbility<Swimming>().IsSubmerged && (GetAbility<DoubleJump>()?.AbilityTemporarilyDisabled == true))
-            {
-                EnableTemporarilyDisabledAbility<DoubleJump>();
-            }
+            GetAbility<Swimming>().Update(
+                this,
+                ref _velocity,
+                _lastPosition.Y,
+                _jumpInitiated,
+                water,
+                elapsedTime,
+                _inputManager.IsInputDown(InputName.ActionButton1));
         }
 
         private void CalculateMovingPlatformCollision()
