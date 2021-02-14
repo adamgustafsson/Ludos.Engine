@@ -36,29 +36,45 @@
         public Vector2 Speed { get; set; } = Vector2.Zero;
         public State CurrentState { get; private set; }
         public Direction CurrentDirection { get; private set; } = Direction.Right;
-        public float Gravity { get; set; }
-        public bool OnLadder { get; set; }
         public List<IAbility> Abilities { get; set; } = new List<IAbility>();
+        protected float Gravity { get; set; }
+        protected bool OnLadder { get; set; }
         protected bool OnGround { get; set; }
 
         public void SetState()
         {
             if (Velocity.Y != 0 && OnLadder)
+            {
                 CurrentState = State.Climbing;
+            }
             else if (OnLadder && !OnGround)
+            {
                 CurrentState = State.ClimbingIdle;
+            }
             else if (GetAbility<Swimming>()?.IsInWater ?? false)
+            {
                 CurrentState = State.Swimming;
+            }
             else if (Velocity.Y < 0)
+            {
                 CurrentState = State.Jumping;
+            }
             else if (GetAbility<WallJump>()?.IsWallClinging ?? false)
+            {
                 CurrentState = State.WallClinging;
+            }
             else if (Velocity.Y > 0)
+            {
                 CurrentState = State.Falling;
+            }
             else if (Velocity.X != 0)
+            {
                 CurrentState = State.Running;
+            }
             else
+            {
                 CurrentState = State.Idle;
+            }
         }
 
         public void SetDirection()
@@ -66,18 +82,54 @@
             _previousDirection = CurrentDirection;
 
             if (Velocity.X > 0)
+            {
                 CurrentDirection = Direction.Right;
+            }
             else if (Velocity.X < 0)
+            {
                 CurrentDirection = Direction.Left;
+            }
             else if (Velocity.X == 0)
+            {
                 CurrentDirection = _previousDirection;
+            }
             else
+            {
                 CurrentDirection = Direction.Right;
+            }
         }
 
         public T GetAbility<T>()
         {
             return (T)Abilities.Where(x => x.GetType() == typeof(T) && ((x.AbilityTemporarilyDisabled && !x.AbilityEnabled) || x.AbilityEnabled)).FirstOrDefault();
+        }
+
+        public bool AbilityIsActive<T>()
+        {
+            var ability = GetAbility<T>();
+            return ability != null && (ability as IAbility).AbilityEnabled;
+        }
+
+        public void TemporarilyDisabledAbility<T>()
+        {
+            var ability = GetAbility<T>();
+
+            if (ability != null && (ability as IAbility).AbilityEnabled)
+            {
+                (ability as IAbility).AbilityTemporarilyDisabled = true;
+                (ability as IAbility).AbilityEnabled = false;
+            }
+        }
+
+        public void EnableTemporarilyDisabledAbility<T>()
+        {
+            var ability = GetAbility<T>();
+
+            if (ability != null && (ability as IAbility).AbilityTemporarilyDisabled)
+            {
+                (ability as IAbility).AbilityEnabled = true;
+                (ability as IAbility).AbilityTemporarilyDisabled = false;
+            }
         }
     }
 }

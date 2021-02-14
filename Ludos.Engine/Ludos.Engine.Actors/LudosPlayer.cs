@@ -82,9 +82,7 @@
 
             BottomDetectBounds = new RectangleF(_bounds.X, _bounds.Y + (_bounds.Height * 0.90f), _bounds.Width, _bounds.Height * 0.20f);
 
-            var test = GetAbility<Swimming>().IsSubmerged;
-
-            if ((GetAbility<DoubleJump>()?.AbilityEnabled ?? false) && !test)
+            if (AbilityIsActive<DoubleJump>())
             {
                 if ((CurrentState == State.Jumping || CurrentState == State.Falling) && !GetAbility<DoubleJump>().DoubleJumpUsed)
                 {
@@ -124,7 +122,7 @@
                 {
                     _bounds.X = collisionRect.Bounds.Left - _bounds.Width;
 
-                    if ((GetAbility<WallJump>()?.AbilityEnabled ?? false) && !OnGround)
+                    if (AbilityIsActive<WallJump>() && !OnGround)
                     {
                         GetAbility<WallJump>().InitiateWallclinging(direction: WallJump.ClingDir.Right);
                         GetAbility<DoubleJump>()?.ResetAbility();
@@ -134,7 +132,7 @@
                 {
                     _bounds.X = collisionRect.Bounds.Right;
 
-                    if ((GetAbility<WallJump>()?.AbilityEnabled ?? false) && !OnGround)
+                    if (AbilityIsActive<WallJump>() && !OnGround)
                     {
                         GetAbility<WallJump>().InitiateWallclinging(direction: WallJump.ClingDir.Left);
                         GetAbility<DoubleJump>()?.ResetAbility();
@@ -155,7 +153,7 @@
                     OnGround = false;
                 }
 
-                if (GetAbility<WallJump>()?.AbilityEnabled ?? false)
+                if (AbilityIsActive<WallJump>())
                 {
                     if (GetAbility<WallJump>().IsWallClinging && (!collisionRectsInflateOne.Any(x => x.Bounds.Left == _bounds.Right) && !collisionRectsInflateOne.Any(x => x.Bounds.Right == _bounds.Left)))
                     {
@@ -211,7 +209,7 @@
 
         private void CalculateWaterCollision(float elapsedTime)
         {
-            if ((GetAbility<Swimming>()?.AbilityEnabled ?? false) == false)
+            if (!AbilityIsActive<Swimming>())
             {
                 return;
             }
@@ -224,10 +222,7 @@
                 GetAbility<Swimming>().IsInWater = true;
                 Speed = new Vector2(Speed.X * 0.85f, Speed.Y);
 
-                if (GetAbility<WallJump>()?.AbilityEnabled ?? false)
-                {
-                    GetAbility<WallJump>().AbilityTemporarilyDisabled = true;
-                }
+                TemporarilyDisabledAbility<WallJump>();
             }
             else if ((_jumpInitiated && isCollidingWithWater && !GetAbility<Swimming>().IsSubmerged) || (GetAbility<Swimming>().IsInWater && !isCollidingWithWater))
             {
@@ -235,10 +230,7 @@
                 Speed = GetAbility<Swimming>().DefaultSpeed;
                 GetAbility<DoubleJump>()?.ResetAbility();
 
-                if (GetAbility<WallJump>()?.AbilityTemporarilyDisabled ?? false)
-                {
-                    GetAbility<WallJump>().AbilityTemporarilyDisabled = false;
-                }
+                EnableTemporarilyDisabledAbility<WallJump>();
             }
 
             if (GetAbility<Swimming>().IsInWater)
@@ -249,6 +241,11 @@
                 if (GetAbility<Swimming>().IsDiving)
                 {
                     Gravity = 100;
+
+                    if (_velocity.Y > 100)
+                    {
+                        _velocity.Y = 100;
+                    }
                 }
                 else if (_bounds.Center().Y > waterObjectBounds.Top)
                 {
@@ -280,9 +277,13 @@
                 Gravity = GetAbility<Swimming>().DefaultGravity;
             }
 
-            if (GetAbility<Swimming>().IsSubmerged && (GetAbility<DoubleJump>()?.AbilityEnabled ?? false))
+            if (GetAbility<Swimming>().IsSubmerged && AbilityIsActive<DoubleJump>())
             {
-                GetAbility<DoubleJump>().JumpUsedOrCanceled();
+                TemporarilyDisabledAbility<DoubleJump>();
+            }
+            else if (!GetAbility<Swimming>().IsSubmerged && (GetAbility<DoubleJump>()?.AbilityTemporarilyDisabled == true))
+            {
+                EnableTemporarilyDisabledAbility<DoubleJump>();
             }
         }
 
@@ -344,7 +345,7 @@
             var gravity = jumpCanceled ? Gravity * 3 : Gravity;
             var defaultVelocityY = newVelocity.Y += (OnGround ? 0 : gravity) * elapsedTime;
 
-            if (GetAbility<WallJump>()?.AbilityEnabled ?? false)
+            if (AbilityIsActive<WallJump>())
             {
                 var useDefaultYVelocity = false;
                 newVelocity = GetAbility<WallJump>().CalculatVelocity(newVelocity, speed, _jumpInitiated, ref direction, ref _currentAcceleration, ref useDefaultYVelocity, wallJumpVelocity: _bounds.Height > 16 ? 50 : 25);
@@ -385,12 +386,14 @@
             var climbingUp = _inputManager.IsInputDown(InputName.MoveUp) && _ladderIsAvailable ? -Speed.X : 0;
             var climbingDown = _inputManager.IsInputDown(InputName.MoveDown) && _ladderIsAvailable ? -Speed.X : 0;
 
-            var jumpFromWaterAvailable = (GetAbility<Swimming>()?.AbilityEnabled ?? false) && (GetAbility<Swimming>()?.IsInWater ?? false) && !(GetAbility<Swimming>()?.IsSubmerged ?? false);
+            var jumpIsAvailableFromPlatform = OnGround || OnLadder || _onMovingPlatform || (AbilityIsActive<WallJump>() && GetAbility<WallJump>().IsWallClinging);
+            var jumpIsAvailableFromWater = AbilityIsActive<Swimming>() && GetAbility<Swimming>().IsInWater && !GetAbility<Swimming>().IsSubmerged;
+            var doubleJumpIsAvailable = AbilityIsActive<DoubleJump>() && GetAbility<DoubleJump>().DoubleJumpAvailable;
 
             var jumpQueueIsOk = JumpQueueIsOk();
-            _jumpInitiated = jumpQueueIsOk && (OnGround || OnLadder || _onMovingPlatform || jumpFromWaterAvailable || (GetAbility<WallJump>()?.IsWallClinging ?? false) || (GetAbility<DoubleJump>()?.DoubleJumpAvailable ?? false));
+            _jumpInitiated = jumpQueueIsOk && (jumpIsAvailableFromPlatform || jumpIsAvailableFromWater || doubleJumpIsAvailable);
 
-            if (_jumpInitiated && !OnGround && !OnLadder && !_onMovingPlatform && !(GetAbility<WallJump>()?.IsWallClinging ?? false))
+            if (_jumpInitiated && !jumpIsAvailableFromPlatform && !jumpIsAvailableFromWater && doubleJumpIsAvailable)
             {
                 GetAbility<DoubleJump>()?.JumpUsedOrCanceled();
             }

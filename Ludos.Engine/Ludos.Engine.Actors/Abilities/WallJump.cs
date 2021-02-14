@@ -5,8 +5,6 @@
 
     internal class WallJump : IAbility
     {
-        private bool _abilityEnabled;
-
         public WallJump()
         {
             AbilityEnabled = true;
@@ -25,12 +23,7 @@
         public Stopwatch WallJumpTimer { get; set; }
         public Stopwatch WallClingReleaseCd { get; set; }
         public ClingDir ClingDirection { get; set; }
-        public bool AbilityEnabled
-        {
-            get { return AbilityTemporarilyDisabled ? false : _abilityEnabled; }
-            set { _abilityEnabled = value; }
-        }
-
+        public bool AbilityEnabled { get; set; }
         public bool AbilityTemporarilyDisabled { get; set; }
 
         public Vector2 CalculatVelocity(Vector2 currentVelocity, Vector2 actorSpeed, bool jumpInitiated, ref Vector2 direction, ref float currentAcceleration, ref bool useDefaultYVelocity, float wallJumpVelocity = 25f)
