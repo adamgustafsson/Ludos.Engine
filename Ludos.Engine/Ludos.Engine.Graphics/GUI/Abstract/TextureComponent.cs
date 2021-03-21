@@ -3,7 +3,7 @@
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
 
-    public abstract class GUIComponent
+    public abstract class TextureComponent
     {
         public abstract Rectangle Rectangle { get; set; }
 

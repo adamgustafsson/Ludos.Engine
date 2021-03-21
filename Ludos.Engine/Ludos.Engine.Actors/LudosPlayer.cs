@@ -41,7 +41,7 @@
             Gravity = 600;
             Position = position;
             Size = size;
-            Speed = new Vector2(10, _bounds.Y > 16 ? 225 : 200);
+            Speed = new Vector2(11, _bounds.Y > 16 ? 225 : 200);
 
             _velocity = new Vector2(0, 0);
             _tmxManager = tmxManager;
@@ -121,6 +121,7 @@
                 else if (isRightCollision)
                 {
                     _bounds.X = collisionRect.Bounds.Left - _bounds.Width;
+                    _velocity.X = 0;
 
                     if (AbilityIsActive<WallJump>() && !OnGround)
                     {
@@ -131,6 +132,7 @@
                 else if (isLeftCollision)
                 {
                     _bounds.X = collisionRect.Bounds.Right;
+                    _velocity.X = 0;
 
                     if (AbilityIsActive<WallJump>() && !OnGround)
                     {

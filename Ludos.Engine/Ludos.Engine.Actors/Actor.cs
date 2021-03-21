@@ -19,6 +19,7 @@
             Climbing = 6,
             ClimbingIdle = 8,
             Swimming = 9,
+            Diving = 10,
         }
 
         public enum Direction
@@ -53,7 +54,7 @@
             }
             else if (GetAbility<Swimming>()?.IsInWater ?? false)
             {
-                CurrentState = State.Swimming;
+                CurrentState = GetAbility<Swimming>().IsSubmerged ? State.Diving : State.Swimming;
             }
             else if (Velocity.Y < 0)
             {
@@ -117,6 +118,7 @@
             if (ability != null && (ability as IAbility).AbilityEnabled)
             {
                 (ability as IAbility).AbilityTemporarilyDisabled = true;
+                (ability as IAbility).ResetAbility();
                 (ability as IAbility).AbilityEnabled = false;
             }
         }

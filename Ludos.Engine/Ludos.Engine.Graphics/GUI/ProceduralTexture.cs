@@ -5,7 +5,7 @@
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
 
-    public class ProceduralTexture : GUIComponent, ICloneable
+    public class ProceduralTexture : TextureComponent, ICloneable
     {
         private readonly GraphicsDevice _graphicsDevice;
 

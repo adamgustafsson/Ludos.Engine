@@ -35,7 +35,7 @@
 
                     if ((animation.StartFrame.X + animation.CurrentXFrame) >= (animation.StartFrame.X + animation.FrameCount))
                     {
-                        animation.CurrentXFrame = animation.StartFrame.X;
+                        animation.CurrentXFrame = 0;
                     }
                 }
             }

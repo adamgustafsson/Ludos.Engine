@@ -5,7 +5,7 @@
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
 
-    public abstract class GUIButton : GUIComponent
+    public abstract class GUIButton : TextureComponent
     {
         public GUIButton(SpriteFont font, InputManager inputManager)
         {

@@ -40,7 +40,7 @@
             _player = player;
 
             _debugPanelContainer = Utilities.CreateTexture2D(_graphicsDevice, new Point(265, 89), Color.Black, 0.50f);
-            _infoContainer = Utilities.CreateTexture2D(_graphicsDevice, new Point(265, 185), Color.Black, 0.50f);
+            _infoContainer = Utilities.CreateTexture2D(_graphicsDevice, new Point(265, 190), Color.Black, 0.50f);
 
             var proceduralCheckBox = new ProceduralTexture(_graphicsDevice, new Rectangle(1884, 12, 19, 16))
             {
@@ -144,6 +144,11 @@
             spriteBatch.DrawString(_fpsFont, "Position Y: " + player.Position.Y, new Vector2(1661, 233f), Color.LightGray);
             spriteBatch.DrawString(_fpsFont, "State: " + player.CurrentState, new Vector2(1661, 248f), Color.LightGray);
             spriteBatch.DrawString(_fpsFont, "Direction: " + player.CurrentDirection, new Vector2(1661, 263f), Color.LightGray);
+        }
+
+        public void DrawString(SpriteBatch spriteBatch, string text)
+        {
+            spriteBatch.DrawString(_fpsFont, text, new Vector2(1661, 293f), Color.LightGray);
         }
 
         public void DrawScaledContent(SpriteBatch spriteBatch)
