@@ -13,6 +13,8 @@
         private RectangleF _cameraBounds;
         private RectangleF _movementBounds;
         private Viewport _viewPort;
+        private Vector2 _velocity;
+        private Vector2 _lastPosition;
 
         public Camera2D(GraphicsDevice graphicsDevice, LudosPlayer player, float cameraScale)
         {
@@ -27,7 +29,9 @@
 
         public RectangleF MovementBounds { get => _movementBounds; set => _movementBounds = value; }
 
-        public void Update()
+        public Vector2 Velocity { get => _velocity; set => _velocity = value; }
+
+        public void Update(GameTime gameTime)
         {
             if (_player.Bounds.Left < _movementBounds.Left)
             {
@@ -67,6 +71,14 @@
             {
                 _cameraBounds.Y = 0;
             }
+
+            _velocity = new Vector2((_cameraBounds.X - _lastPosition.X) / (float)gameTime.ElapsedGameTime.TotalSeconds, (_cameraBounds.Y - _lastPosition.Y) / (float)gameTime.ElapsedGameTime.TotalSeconds);
+
+            // Fixes an issue where velocity becomes infinity on initial loop for some reason.
+            _velocity.X = double.IsInfinity(_velocity.X) ? 0 : _velocity.X;
+            _velocity.Y = double.IsInfinity(_velocity.Y) ? 0 : _velocity.Y;
+
+            _lastPosition = new Vector2(_cameraBounds.X, _cameraBounds.Y);
         }
 
         public void SetupCameraBounds()

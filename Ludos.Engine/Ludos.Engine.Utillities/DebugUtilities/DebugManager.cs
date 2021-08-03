@@ -135,17 +135,18 @@
         public void DrawDebugInfo(SpriteBatch spriteBatch, LudosPlayer player)
         {
             spriteBatch.Draw(_infoContainer, new Vector2(1651, 100), Color.White);
+            var vectorStringFormat = "{0}: x {1}, y {2}";
 
             _fpsCounter.DrawFps(spriteBatch, _fpsFont, new Vector2(1658f, 107f), Color.LightGray);
             spriteBatch.DrawString(_fpsFont, "__________________________________________", new Vector2(1661, 167f), Color.LightGray);
-            spriteBatch.DrawString(_fpsFont, "Velocity X: " + player.Velocity.X, new Vector2(1661, 187f), Color.LightGray);
-            spriteBatch.DrawString(_fpsFont, "Velocity Y: " + player.Velocity.Y, new Vector2(1661, 203f), Color.LightGray);
-            spriteBatch.DrawString(_fpsFont, "Position X: " + player.Position.X, new Vector2(1661, 218f), Color.LightGray);
-            spriteBatch.DrawString(_fpsFont, "Position Y: " + player.Position.Y, new Vector2(1661, 233f), Color.LightGray);
-            spriteBatch.DrawString(_fpsFont, "State: " + player.CurrentState, new Vector2(1661, 248f), Color.LightGray);
-            spriteBatch.DrawString(_fpsFont, "Direction: " + player.CurrentDirection, new Vector2(1661, 263f), Color.LightGray);
-        }
+            spriteBatch.DrawString(_fpsFont, string.Format(vectorStringFormat, "Velocity", player.Velocity.X.ToString("0.00"), player.Velocity.Y.ToString("0.00")), new Vector2(1661, 187f), Color.LightGray);
+            spriteBatch.DrawString(_fpsFont, string.Format(vectorStringFormat, "Position", player.Position.X.ToString("0.00"), player.Position.Y.ToString("0.00")), new Vector2(1661, 203), Color.LightGray);
+            spriteBatch.DrawString(_fpsFont, string.Format(vectorStringFormat, "Camera velocity", _camera.Velocity.X.ToString("0.00"), _camera.Velocity.Y.ToString("0.00")), new Vector2(1661, 218f), Color.LightGray);
+            spriteBatch.DrawString(_fpsFont, "State: " + player.CurrentState, new Vector2(1661, 233f), Color.LightGray);
+            spriteBatch.DrawString(_fpsFont, "Direction: " + player.CurrentDirection, new Vector2(1661, 248), Color.LightGray);
 
+        }
+         
         public void DrawString(SpriteBatch spriteBatch, string text)
         {
             spriteBatch.DrawString(_fpsFont, text, new Vector2(1661, 293f), Color.LightGray);

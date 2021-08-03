@@ -2,26 +2,19 @@
 {
     using System;
     using System.Collections.Generic;
-    using Ludos.Engine.Actors;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
 
     public class ScrollingTexture
     {
-        private Texture2D _texture;
-        private Actor _player;
-        private List<Texture> _texturePair;
+        private readonly List<Texture> _texturePair;
         private Camera2D _camera;
         private bool _constantSpeed;
-        private float _scrollingSpeed;
-        private float _speed;
-        private float _speedY;
-        public Vector2 Velocity = Vector2.Zero;
-        private bool allowYParallax;
+        private Vector2 _scrollingSpeed;
+        private Vector2 _speed;
 
-        public ScrollingTexture(Texture2D texture, Actor actor, Camera2D camera, float scrollingSpeed, bool constantSpeed = false)
+        public ScrollingTexture(Texture2D texture, Camera2D camera, Vector2 scrollingSpeed, bool constantSpeed = false, float offsetY = 0)
         {
-            _player = actor;
             _camera = camera;
 
             var textures = new List<Texture2D>() { texture, texture };
@@ -33,7 +26,7 @@
 
                 _texturePair.Add(new Texture(t)
                 {
-                    Position = new Vector2((i * t.Width) - Math.Min(i, i + 1), 270 - t.Height),
+                    Position = new Vector2((i * t.Width) - Math.Min(i, i + 1), 270 - t.Height + offsetY),
                 });
             }
 
@@ -58,12 +51,49 @@
 
         private void ApplySpeed(GameTime gameTime)
         {
+            _speed.X = (float)(_scrollingSpeed.X * gameTime.ElapsedGameTime.TotalSeconds);
+            _speed.Y = (float)(_scrollingSpeed.Y * gameTime.ElapsedGameTime.TotalSeconds);
 
+            if (!_constantSpeed)
+            {
+                _speed.X *= _camera.Velocity.X;
+                _speed.Y *= _camera.Velocity.Y;
+            }
+
+            foreach (var sprite in _texturePair)
+            {
+                var posX = (float)sprite.Position.X;
+                var speedX = (float)(posX -= _speed.X);
+
+                var posY = (float)sprite.Position.Y;
+                var speedY = (float)(posY -= _speed.Y);
+
+                sprite.Position = new Vector2(speedX, speedY);
+            }
         }
 
         private void CheckPosition()
         {
+            for (int i = 0; i < _texturePair.Count; i++)
+            {
+                var sprite = _texturePair[i];
 
+                var otherTextureIndex = i - 1;
+
+                if (otherTextureIndex < 0)
+                {
+                    otherTextureIndex = _texturePair.Count - 1;
+                }
+
+                if (sprite.Rectangle.Right <= 0)
+                {
+                    sprite.Position = new Vector2(_texturePair[otherTextureIndex].Rectangle.Right - (_speed.X * 2), sprite.Position.Y);
+                }
+                else if (sprite.Rectangle.Left >= sprite.Rectangle.Width)
+                {
+                    sprite.Position = new Vector2((_texturePair[otherTextureIndex].Rectangle.Left - sprite.Rectangle.Width) - (_speed.X * 2), sprite.Position.Y);
+                }
+            }
         }
     }
 }

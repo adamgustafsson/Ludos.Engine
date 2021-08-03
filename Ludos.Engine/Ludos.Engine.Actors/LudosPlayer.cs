@@ -251,12 +251,12 @@
                 }
                 else if (!platformBounds.Intersects(BottomDetectBounds) && mp.Passenger != null)
                 {
-                    mp.Passenger = null;
+                    mp.Passenger = null;                
                 }
 
                 if (_jumpInitiated)
                 {
-                    mp.Passenger = null;
+                    mp.Passenger = null;                
                 }
             }
 
