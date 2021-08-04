@@ -75,8 +75,8 @@
             _velocity = new Vector2((_cameraBounds.X - _lastPosition.X) / (float)gameTime.ElapsedGameTime.TotalSeconds, (_cameraBounds.Y - _lastPosition.Y) / (float)gameTime.ElapsedGameTime.TotalSeconds);
 
             // Fixes an issue where velocity becomes infinity on initial loop for some reason.
-            _velocity.X = double.IsInfinity(_velocity.X) ? 0 : _velocity.X;
-            _velocity.Y = double.IsInfinity(_velocity.Y) ? 0 : _velocity.Y;
+            _velocity.X = double.IsInfinity(_velocity.X) || double.IsNaN(_velocity.X) ? 0 : _velocity.X;
+            _velocity.Y = double.IsInfinity(_velocity.Y) || double.IsNaN(_velocity.Y) ? 0 : _velocity.Y;
 
             _lastPosition = new Vector2(_cameraBounds.X, _cameraBounds.Y);
         }
