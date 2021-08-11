@@ -67,6 +67,12 @@
                 {
                     actor.Gravity = 100;
 
+                    // Fixes an issue where the "jump state" got initiated when diving due to negative velocity y.
+                    if (actorVelocity.Y < 0)
+                    {
+                        actorVelocity.Y = 0;
+                    }
+
                     if (actorVelocity.Y > 100)
                     {
                         actorVelocity.Y = 100;
@@ -77,11 +83,14 @@
                     actorVelocity.Y = 0;
                     actor.Gravity -= elapsedTime * (IsSubmerged ? 2000 : 1000);
                 }
-                else if (actorLastYPosition > actor.Position.Y && (actor.Bounds.Center().Y < waterObjectBounds.Top))
+                else if (actorLastYPosition > actor.Position.Y && (actor.Bounds.Center().Y <= waterObjectBounds.Top))
                 {
                     if (actor.Gravity < 500)
                     {
                         actor.Gravity = 500;
+
+                        // Fixes an issue where velocity y becomes negative for a second while swimming and therefore triggered the "jump state".
+                        actorVelocity.Y = 0;
                     }
                     else
                     {

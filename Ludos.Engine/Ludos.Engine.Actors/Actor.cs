@@ -36,6 +36,8 @@
         public RectangleF BottomDetectBounds { get; set; }
         public Vector2 Speed { get; set; } = Vector2.Zero;
         public State CurrentState { get; private set; }
+
+        public State PreviousState { get; private set; }
         public Direction CurrentDirection { get; private set; } = Direction.Right;
         public List<IAbility> Abilities { get; set; } = new List<IAbility>();
         public float Gravity { get; set; }
@@ -44,6 +46,8 @@
 
         public void SetState()
         {
+            PreviousState = CurrentState;
+
             if (Velocity.Y != 0 && OnLadder)
             {
                 CurrentState = State.Climbing;
@@ -52,7 +56,7 @@
             {
                 CurrentState = State.ClimbingIdle;
             }
-            else if (GetAbility<Swimming>()?.IsInWater ?? false)
+            else if ((GetAbility<Swimming>()?.IsInWater ?? false) && Velocity.Y >= 0)
             {
                 CurrentState = GetAbility<Swimming>().IsSubmerged ? State.Diving : State.Swimming;
             }
