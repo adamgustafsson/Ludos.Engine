@@ -19,17 +19,23 @@
         private RectangleF _lastPosition;
         private Vector2 _startPositon;
         private Vector2 _velocity;
+        private Vector2 _prevVelocity;
         private RectangleF _bounds;
 
         private bool _imidiateTopCollisionExists;
+        private bool _imidiateLeftCollisionExists;
+        private bool _imidiateRightCollisionExists;
+
         private bool _jumpButtonPressedDown = false;
         private bool _jumpInitiated;
 
         private bool _ladderIsAvailable;
+        private bool _onTopOfLadder;
         private MapObject _mostRecentLadder;
-
-        private float _currentAcceleration = 0.001f;
         private bool _onMovingPlatform;
+
+        private const float INITIAL_ACCELERATION = 0.001f;
+        private float _currentAcceleration = INITIAL_ACCELERATION;
 
         public LudosPlayer(Vector2 position, Point size, GameServiceContainer services)
             : this(position, size, services.GetService<TMXManager>(), services.GetService<InputManager>())
@@ -67,6 +73,8 @@
             Accelerate(ref direction);
             _velocity = CalculateMoveVelocity(_velocity, direction, Speed, elapsedTime);
 
+            AdjustVelocityOnPreviousCollision();
+
             var currentPosition = new Vector2(_bounds.X, _bounds.Y);
             currentPosition += _velocity * elapsedTime;
 
@@ -88,6 +96,25 @@
                 {
                     GetAbility<DoubleJump>().DoubleJumpAvailable = true;
                 }
+            }
+
+            _prevVelocity = _velocity;
+        }
+
+        private void AdjustVelocityOnPreviousCollision()
+        {
+            var changedDirection = (_velocity.X > 0 && _prevVelocity.X < 0) || (_velocity.X < 0 && _prevVelocity.X > 0);
+            var rightCollisionNextFrame = _imidiateRightCollisionExists && _velocity.X > 0;
+            var leftCollisionNextFrame = _imidiateLeftCollisionExists && _velocity.X < 0;
+
+            if (changedDirection)
+            {
+                _currentAcceleration = 0.01f;
+            }
+
+            if (OnGround && !_onTopOfLadder && (rightCollisionNextFrame || leftCollisionNextFrame))
+            {
+                ResetVelocity();
             }
         }
 
@@ -121,7 +148,7 @@
                 else if (isRightCollision)
                 {
                     _bounds.X = collisionRect.Bounds.Left - _bounds.Width;
-                    _velocity.X = 0;
+                    ResetVelocity();
 
                     if (AbilityIsActive<WallJump>() && !OnGround)
                     {
@@ -133,6 +160,7 @@
                 {
                     _bounds.X = collisionRect.Bounds.Right;
                     _velocity.X = 0;
+                    ResetVelocity();
 
                     if (AbilityIsActive<WallJump>() && !OnGround)
                     {
@@ -164,6 +192,8 @@
                 }
 
                 _imidiateTopCollisionExists = collisionRectsInflateOne.Any(x => (x.Bounds.Bottom == _bounds.Top)); // Object bottom is colliding.
+                _imidiateRightCollisionExists = collisionRectsInflateOne.Any(x => x.Bounds.Left == _bounds.Right.ToInt32());
+                _imidiateLeftCollisionExists = collisionRectsInflateOne.Any(x => x.Bounds.Right == _bounds.Left.ToInt32());
             }
         }
 
@@ -172,15 +202,15 @@
             var ladderDetectionBounds = _bounds;
             ladderDetectionBounds.Inflate(-(_bounds.Width * 0.60f), 0f);
 
-            var onTopOfLadder = false;
+            _onTopOfLadder = false;
 
             if (_mostRecentLadder != null)
             {
-                onTopOfLadder = (ladderDetectionBounds.Right <= _mostRecentLadder.Bounds.Right) &&
+                _onTopOfLadder = (ladderDetectionBounds.Right <= _mostRecentLadder.Bounds.Right) &&
                     (ladderDetectionBounds.Left >= _mostRecentLadder.Bounds.Left) &&
                     (_lastPosition.Bottom.ToInt32() <= _mostRecentLadder.Bounds.Top && _bounds.Bottom.ToInt32() >= _mostRecentLadder.Bounds.Top);
 
-                if (onTopOfLadder)
+                if (_onTopOfLadder)
                 {
                     SetGrounded(new PointF(_bounds.X, _mostRecentLadder.Bounds.Top - _bounds.Height));
                 }
@@ -197,12 +227,12 @@
             {
                 _mostRecentLadder = ladders.ToList()[0];
 
-                if (!(OnGround && !onTopOfLadder))
+                if (!(OnGround && !_onTopOfLadder))
                 {
                     _bounds.X = _mostRecentLadder.Bounds.X;
                 }
 
-                if (onTopOfLadder)
+                if (_onTopOfLadder)
                 {
                     _bounds.Y = _bounds.Y + (_bounds.Height / 4);
                 }
@@ -387,8 +417,14 @@
             }
             else if (direction.X == 0)
             {
-                _currentAcceleration = 0.001f;
+                _currentAcceleration = INITIAL_ACCELERATION;
             }
+        }
+
+        private void ResetVelocity()
+        {
+            _velocity.X = 0f;
+            _currentAcceleration = INITIAL_ACCELERATION;
         }
     }
 }

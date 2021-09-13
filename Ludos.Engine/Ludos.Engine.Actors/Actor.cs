@@ -32,11 +32,9 @@
         public abstract Vector2 Velocity { get; }
         public abstract RectangleF Bounds { get; }
         public abstract Point Size { set; }
-
         public RectangleF BottomDetectBounds { get; set; }
         public Vector2 Speed { get; set; } = Vector2.Zero;
         public State CurrentState { get; private set; }
-
         public State PreviousState { get; private set; }
         public Direction CurrentDirection { get; private set; } = Direction.Right;
         public List<IAbility> Abilities { get; set; } = new List<IAbility>();

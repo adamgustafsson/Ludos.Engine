@@ -144,7 +144,6 @@
             spriteBatch.DrawString(_fpsFont, string.Format(vectorStringFormat, "Camera velocity", _camera.Velocity.X.ToString("0.00"), _camera.Velocity.Y.ToString("0.00")), new Vector2(1661, 218f), Color.LightGray);
             spriteBatch.DrawString(_fpsFont, "State: " + player.CurrentState, new Vector2(1661, 233f), Color.LightGray);
             spriteBatch.DrawString(_fpsFont, "Direction: " + player.CurrentDirection, new Vector2(1661, 248), Color.LightGray);
-
         }
          
         public void DrawString(SpriteBatch spriteBatch, string text)
