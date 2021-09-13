@@ -37,7 +37,6 @@
         public void Update(GameTime gameTime)
         {
             ApplySpeed(gameTime);
-
             CheckPosition();
         }
 
@@ -51,8 +50,8 @@
 
         private void ApplySpeed(GameTime gameTime)
         {
-            _speed.X = (float)(_scrollingSpeed.X * gameTime.ElapsedGameTime.TotalSeconds);
-            _speed.Y = (float)(_scrollingSpeed.Y * gameTime.ElapsedGameTime.TotalSeconds);
+            _speed.X = _scrollingSpeed.X * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            _speed.Y = _scrollingSpeed.Y * (float)gameTime.ElapsedGameTime.TotalSeconds;
 
             if (!_constantSpeed)
             {
@@ -62,13 +61,7 @@
 
             foreach (var sprite in _texturePair)
             {
-                var posX = (float)sprite.Position.X;
-                var speedX = (float)(posX -= _speed.X);
-
-                var posY = (float)sprite.Position.Y;
-                var speedY = (float)(posY -= _speed.Y);
-
-                sprite.Position = new Vector2(speedX, speedY);
+                sprite.Position -= new Vector2(_speed.X, _speed.Y);
             }
         }
 

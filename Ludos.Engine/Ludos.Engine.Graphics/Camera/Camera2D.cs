@@ -51,10 +51,10 @@
                 _movementBounds.Y = _player.Bounds.Bottom - _movementBounds.Height;
             }
 
-            if (_movementBounds.Center() != _player.Bounds.Center() && _player.Velocity.X == 0)
+            if (Vector2.Distance(_movementBounds.Center(), _player.Bounds.Center()) > 0 && _player.Velocity.X == 0)
             {
                 var dir = _player.Bounds.Center().X - _movementBounds.Center().X;
-                _movementBounds.X += dir * 0.05f;
+                _movementBounds.X += dir * ((float)gameTime.ElapsedGameTime.TotalSeconds * 2);
             }
 
             var cameraWidth = _cameraBounds.Width / _scale;

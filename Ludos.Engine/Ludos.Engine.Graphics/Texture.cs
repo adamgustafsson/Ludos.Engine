@@ -28,7 +28,7 @@
 
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(_texture, Position, null, Color.White, 0, new Vector2(0, 0), 1f, SpriteEffects.None, Layer);
+            spriteBatch.Draw(_texture, Position, null, Color.White, 0, Vector2.Zero, 1f, SpriteEffects.None, Layer);
         }
     }
 }
