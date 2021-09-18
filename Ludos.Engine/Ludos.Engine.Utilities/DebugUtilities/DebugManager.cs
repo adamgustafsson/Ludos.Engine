@@ -29,14 +29,14 @@
         private bool _drawDebugInfo = true;
         private bool _drawPlayerCollision;
 
-        public DebugManager(ContentManager content, GraphicsDevice graphicsDevice, InputManager inputManager, Camera2D camera, TMXManager tmxManager, LudosPlayer player)
+        public DebugManager(GameServiceContainer services, Camera2D camera, LudosPlayer player, SpriteFont debugTextFont)
         {
             _fpsCounter = new FpsCounter();
-            _fpsFont = content.Load<SpriteFont>("Fonts/Segoe");
-            _graphicsDevice = graphicsDevice;
-            _inputManager = inputManager;
+            _fpsFont = debugTextFont;
+            _graphicsDevice = services.GetService<ContentManager>().GetGraphicsDevice();
+            _inputManager = services.GetService<InputManager>();
+            _tmxManager = services.GetService<TMXManager>();
             _camera = camera;
-            _tmxManager = tmxManager;
             _player = player;
 
             _debugPanelContainer = Utilities.CreateTexture2D(_graphicsDevice, new Point(265, 89), Color.Black, 0.50f);
@@ -145,7 +145,7 @@
             spriteBatch.DrawString(_fpsFont, "State: " + player.CurrentState, new Vector2(1661, 233f), Color.LightGray);
             spriteBatch.DrawString(_fpsFont, "Direction: " + player.CurrentDirection, new Vector2(1661, 248), Color.LightGray);
         }
-         
+
         public void DrawString(SpriteBatch spriteBatch, string text)
         {
             spriteBatch.DrawString(_fpsFont, text, new Vector2(1661, 293f), Color.LightGray);

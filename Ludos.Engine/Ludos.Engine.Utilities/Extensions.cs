@@ -2,10 +2,12 @@
 {
     using System;
     using Microsoft.Xna.Framework;
+    using Microsoft.Xna.Framework.Content;
+    using Microsoft.Xna.Framework.Graphics;
     using PointF = System.Drawing.PointF;
     using RectangleF = System.Drawing.RectangleF;
 
-    internal static class Extensions
+    public static class Extensions
     {
         public static PointF CenterP(this RectangleF rec)
         {
@@ -36,6 +38,11 @@
         {
             var sysRec = System.Drawing.Rectangle.Round(recF);
             return new Rectangle(sysRec.X, sysRec.Y, sysRec.Width, sysRec.Height);
+        }
+
+        public static GraphicsDevice GetGraphicsDevice(this ContentManager content)
+        {
+            return ((IGraphicsDeviceService)content.ServiceProvider.GetService(typeof(IGraphicsDeviceService))).GraphicsDevice;
         }
     }
 }

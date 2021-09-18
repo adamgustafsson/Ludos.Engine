@@ -81,20 +81,6 @@
             _lastPosition = new Vector2(_cameraBounds.X, _cameraBounds.Y);
         }
 
-        public void SetupCameraBounds()
-        {
-            var cameraWidth = _cameraBounds.Width / _scale;
-            var cameraHeight = _cameraBounds.Height / _scale;
-
-            var cameraCenter = new Vector2(_cameraBounds.Left + (cameraWidth / 2f), _cameraBounds.Top + (cameraHeight / 2f));
-            var cameraCenterVisualized = VisualizeCordinates(cameraCenter);
-
-            var movementBoundsWidth = 75;
-            var movementBoundsHeight = 200;
-
-            _movementBounds = new RectangleF(_player.Bounds.Center().X - (movementBoundsWidth / 2), cameraCenterVisualized.Y - 100, movementBoundsWidth, movementBoundsHeight);
-        }
-
         public Vector2 VisualizeCordinates(Vector2 cordinates)
         {
             return new Vector2(cordinates.X - _cameraBounds.X, cordinates.Y - _cameraBounds.Y);
@@ -122,6 +108,25 @@
             rec.X -= _cameraBounds.X.ToInt32();
             rec.Y -= _cameraBounds.Y.ToInt32();
             return rec;
+        }
+
+        public bool IsOnScreen(Vector2 cordinates)
+        {
+            return _cameraBounds.Contains(cordinates.X, cordinates.Y);
+        }
+
+        private void SetupCameraBounds()
+        {
+            var cameraWidth = _cameraBounds.Width / _scale;
+            var cameraHeight = _cameraBounds.Height / _scale;
+
+            var cameraCenter = new Vector2(_cameraBounds.Left + (cameraWidth / 2f), _cameraBounds.Top + (cameraHeight / 2f));
+            var cameraCenterVisualized = VisualizeCordinates(cameraCenter);
+
+            var movementBoundsWidth = 75;
+            var movementBoundsHeight = 200;
+
+            _movementBounds = new RectangleF(_player.Bounds.Center().X - (movementBoundsWidth / 2), cameraCenterVisualized.Y - 100, movementBoundsWidth, movementBoundsHeight);
         }
     }
 }

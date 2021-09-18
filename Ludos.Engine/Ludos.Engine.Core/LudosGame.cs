@@ -34,20 +34,17 @@
         protected SpriteBatch SpriteBatch { get; private set; }
         protected GraphicsDeviceManager Graphics { get; }
 
-        protected void InitializeTmxManager(List<TMXMapInfo> tmxMapsInfo)
+        protected void InitializeGameServices(List<TMXMapInfo> tmxMapsInfo, Dictionary<string, Input> userControls)
         {
             _tmxManager = new TMXManager(Content, tmxMapsInfo);
-            Services.AddService(_tmxManager);
-        }
-
-        protected void InitializeInputManager(Dictionary<string, Input> userControls)
-        {
             _inputManager = new InputManager(new System.Drawing.Size(Graphics.PreferredBackBufferWidth, Graphics.PreferredBackBufferHeight))
             {
                 UserControls = userControls,
             };
 
+            Services.AddService(_tmxManager);
             Services.AddService(_inputManager);
+            Services.AddService(Content);
         }
 
         protected override void Update(GameTime gameTime)
