@@ -24,6 +24,9 @@
             LoadContent(content, soundInfo);
         }
 
+        public bool SoundEnabled { get; set; }
+        public bool MusicEnabled { get; set; }
+
         public void LoadContent(ContentManager content, SoundInfo soundInfo)
         {
             if (string.IsNullOrWhiteSpace(soundInfo.SoundEffectsPath) || string.IsNullOrWhiteSpace(soundInfo.SoundEffectsPath))
@@ -47,24 +50,40 @@
 
         public void PlaySound(int soundEffectIndex, float volumne = 0.4f)
         {
+            if (!SoundEnabled) { return; }
+
             _soundEffects[soundEffectIndex].Play(volumne, 0f, 0f);
         }
 
         public void PlaySound(string soundEffectName, float volumne = 0.4f)
         {
+            if (!SoundEnabled) { return; }
+
             _soundEffects.Where(x => x.Name.Equals(soundEffectName)).FirstOrDefault().Play(volumne, 0f, 0f);
         }
 
         public void PlaySoundTrack(int soundTrackIndex, float volumne = 0.4f)
         {
+            if (!MusicEnabled) { return; }
+
             if (!IsPlayingSong(soundTrackIndex))
             {
                 PlaySoundTrack(_soundTracks[soundTrackIndex], volumne);
             }
         }
 
+        public void StopSoundTrack()
+        {
+            if (MediaPlayer.State == MediaState.Playing)
+            {
+                MediaPlayer.Stop();
+            }
+        }
+
         public void PlaySoundTrack(string soundTrackName, float volumne = 0.4f)
         {
+            if (!MusicEnabled) { return; }
+
             var soundTrack = _soundTracks.Where(x => x.Name.Equals(soundTrackName)).FirstOrDefault();
 
             if (!IsPlayingSong(_soundTracks.IndexOf(soundTrack)))
