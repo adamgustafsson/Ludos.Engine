@@ -2,11 +2,11 @@
 {
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
+    using RectangleF = System.Drawing.RectangleF;
 
     public class Texture : TextureComponent
     {
         private Texture2D _texture;
-  
         public Texture(Texture2D texture)
         {
             _texture = texture;
@@ -20,6 +20,12 @@
         {
             get { return new Rectangle((int)Position.X, (int)Position.Y, _texture.Width, _texture.Height); }
             set { Rectangle = value; }
+        }
+
+        public RectangleF RectangleF
+        {
+            get { return new RectangleF(Position.X, Position.Y, _texture.Width, _texture.Height); }
+            set { RectangleF = value; }
         }
 
         public override void Update(GameTime gameTime)
