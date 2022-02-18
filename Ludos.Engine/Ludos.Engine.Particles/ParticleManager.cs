@@ -3,73 +3,108 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Text;
     using Microsoft.Xna.Framework;
-    using Microsoft.Xna.Framework.Content;
     using Microsoft.Xna.Framework.Graphics;
 
     public class ParticleManager
     {
         private GraphicsDevice _graphics;
         private Graphics.Camera2D _camera;
-        private List<ExplosionParticle> _explosionParticles;
         private Texture2D _pixelParticle;
-        private int _particleCountExplosion = 150;
-        private int _particleCountFire = 100;
-        private Dictionary<Vector2, List<FireParticle>> _fireParticles;
+        private List<ParticleSystemDefinition> _particleSystemDefinitions;
+        private List<Dictionary<Vector2, List<IParticle>>> _particleSystems;
 
-        public ParticleManager(GraphicsDevice graphics, Graphics.Camera2D camera, Dictionary<string, List<Vector2>> firePositions, float scale)
+        public ParticleManager(GraphicsDevice graphics, Graphics.Camera2D camera, List<ParticleSystemDefinition> particleSystemDefinitions)
         {
             _graphics = graphics;
             _camera = camera;
-            _fireParticles = new Dictionary<Vector2, List<FireParticle>>();
+            _particleSystemDefinitions = particleSystemDefinitions;
+            _particleSystems = new List<Dictionary<Vector2, List<IParticle>>>();
             LoadContent();
 
-            foreach (var particleSystem in firePositions)
+            foreach (var systemDef in _particleSystemDefinitions.Where(x => x.Type != ParticleSystemType.RenderOnTrigger))
             {
-                if (particleSystem.Key == typeof(FireParticle).Name)
+                var particleDict = new Dictionary<Vector2, List<IParticle>>();
+
+                foreach (var position in systemDef.Positions)
                 {
-                    foreach (var position in particleSystem.Value)
+                    var particles = new List<IParticle>();
+
+                    for (int i = 0; i < systemDef.Amount; i++)
                     {
-                        var fireParticles = new List<FireParticle>();
-
-                        for (int i = 0; i < _particleCountFire; i++)
+                        if (systemDef.ParticleType == typeof(FireParticle))
                         {
-                            fireParticles.Add(new FireParticle(_pixelParticle, position, 1.3f, i, doRespawn: true));
+                            particles.Add(new FireParticle(_pixelParticle, position, systemDef.Scale, i, doRespawn: systemDef.DoRepeat));
                         }
-
-                        _fireParticles.Add(position, fireParticles);
+                        else if (systemDef.ParticleType == typeof(ExplosionParticle))
+                        {
+                            particles.Add(new ExplosionParticle(_pixelParticle, position, systemDef.Scale));
+                        }
                     }
-                }
+
+                    particleDict.Add(position, particles);
+                 }
+
+                _particleSystems.Add(particleDict);
             }
         }
 
-        public void Update(float a_elapsedTime)
+        public void Update(float elapsedTime)
         {
-            foreach (var particleList in _fireParticles.Where(x => _camera.IsOnScreen(x.Key)))
+            foreach (var particleSystem in _particleSystems)
             {
-                foreach (FireParticle smokeParticle in particleList.Value)
+                foreach (var positionAndParticles in particleSystem.Where(x => _camera.IsOnScreen(x.Key)))
                 {
-                    smokeParticle.Update(a_elapsedTime);
+                    foreach (IParticle particle in positionAndParticles.Value.Where(x => x.IsActive()))
+                    {
+                        particle.Update(elapsedTime);
+                    }
                 }
             }
         }
 
         public void Draw(float elapsedTime, SpriteBatch spriteBatch)
         {
-            foreach (var particleList in _fireParticles.Where(x => _camera.IsOnScreen(x.Key)))
+            foreach (var particleSystem in _particleSystems)
             {
-                foreach (FireParticle smokeParticle in particleList.Value)
+                foreach (var positionAndParticles in particleSystem.Where(x => _camera.IsOnScreen(x.Key)))
                 {
-                    smokeParticle.Draw(elapsedTime, spriteBatch, _camera);
+                    foreach (IParticle particle in positionAndParticles.Value.Where(x => x.IsActive()))
+                    {
+                        particle.Draw(elapsedTime, spriteBatch, _camera);
+                    }
                 }
             }
+        }
+
+        public void InitiateParticleSystemAt(Vector2 position, Type particleSystemType)
+        {
+            var def = _particleSystemDefinitions.Where(x => x.Type == ParticleSystemType.RenderOnTrigger && x.ParticleType == particleSystemType).FirstOrDefault();
+
+            var particles = new List<IParticle>();
+
+            var particleDict = new Dictionary<Vector2, List<IParticle>>();
+
+            for (int i = 0; i < def.Amount; i++)
+            {
+                if (def.ParticleType == typeof(FireParticle))
+                {
+                    particles.Add(new FireParticle(_pixelParticle, position, def.Scale, i, doRespawn: def.DoRepeat));
+                }
+                else if (def.ParticleType == typeof(ExplosionParticle))
+                {
+                    particles.Add(new ExplosionParticle(_pixelParticle, position, def.Scale));
+                }
+            }
+
+            particleDict.Add(position, particles);
+
+            _particleSystems.Add(particleDict);
         }
 
         public void LoadContent()
         {
             _pixelParticle = Utilities.Utilities.CreateTexture2D(_graphics, new Point(1, 1), Color.White, 1);
         }
-
     }
 }

@@ -64,6 +64,11 @@
             return _layerIndexInfo[layerName];
         }
 
+        public Rectangle GetCurrentMapBounds()
+        {
+            return _currentMap.Bounds;
+        }
+
         public IEnumerable<MapObject> GetObjectsInRegion(string layerName, RectangleF region)
         {
             return _currentMap.GetObjectsInRegion(_layerIndexInfo[layerName], region);
@@ -115,6 +120,7 @@
                 { TMXDefaultLayerInfo.ObjectLayerWorld, unassignedIndex },
                 { TMXDefaultLayerInfo.ObjectLayerWater, unassignedIndex },
                 { TMXDefaultLayerInfo.ObjectLayerInteractableObjects, unassignedIndex },
+                { TMXDefaultLayerInfo.ObjectLayerParticles, unassignedIndex },
                 { TMXDefaultLayerInfo.TileLayerForeground, unassignedIndex },
                 { TMXDefaultLayerInfo.TileLayerWorld, unassignedIndex },
                 { TMXDefaultLayerInfo.TileLayerBackGround, unassignedIndex },
