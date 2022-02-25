@@ -55,13 +55,12 @@
 
             if (!_constantSpeed)
             {
-                _speed.X *= _camera.Velocity.X;
-                _speed.Y *= _camera.Velocity.Y;
+                _speed *= _camera.Velocity;
             }
 
             foreach (var sprite in _texturePair)
             {
-                sprite.Position -= new Vector2(_speed.X, _speed.Y);
+                sprite.Position -= _speed;
             }
         }
 
@@ -78,13 +77,13 @@
                     otherTextureIndex = _texturePair.Count - 1;
                 }
 
-                if (sprite.Rectangle.Right <= 0)
+                if (sprite.RectangleF.Right <= 0)
                 {
-                    sprite.Position = new Vector2(_texturePair[otherTextureIndex].Rectangle.Right - (_speed.X * 2), sprite.Position.Y);
+                    sprite.Position = new Vector2(_texturePair[otherTextureIndex].RectangleF.Right - (_speed.X * 2f), sprite.Position.Y);
                 }
-                else if (sprite.Rectangle.Left >= sprite.Rectangle.Width)
+                else if (sprite.RectangleF.Left >= sprite.RectangleF.Width)
                 {
-                    sprite.Position = new Vector2((_texturePair[otherTextureIndex].Rectangle.Left - sprite.Rectangle.Width) - (_speed.X * 2), sprite.Position.Y);
+                    sprite.Position = new Vector2((_texturePair[otherTextureIndex].RectangleF.Left - sprite.RectangleF.Width) - (_speed.X * 2f), sprite.Position.Y);
                 }
             }
         }
