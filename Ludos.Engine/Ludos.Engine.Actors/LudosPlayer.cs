@@ -13,6 +13,8 @@
 
     public class LudosPlayer : Actor
     {
+        private const float INITIALACCELERATION = 0.001f;
+
         private TMXManager _tmxManager;
         private InputManager _inputManager;
 
@@ -34,8 +36,7 @@
         private MapObject _mostRecentLadder;
         private bool _onMovingPlatform;
 
-        private const float INITIAL_ACCELERATION = 0.001f;
-        private float _currentAcceleration = INITIAL_ACCELERATION;
+        private float _currentAcceleration = INITIALACCELERATION;
 
         public LudosPlayer(Vector2 position, Point size, GameServiceContainer services)
             : this(position, size, services.GetService<TMXManager>(), services.GetService<InputManager>())
@@ -64,6 +65,10 @@
         public override RectangleF Bounds { get => _bounds; }
         public override Vector2 Position { get => new Vector2(_bounds.X, _bounds.Y); set => _bounds.Location = new PointF(value.X, value.Y); }
         public override Point Size { set => _bounds.Size = new SizeF(value.X, value.Y); }
+        public void ResetToStartPosition()
+        {
+            Position = _startPositon;
+        }
 
         public virtual void Update(float elapsedTime)
         {
@@ -116,11 +121,6 @@
             {
                 ResetVelocity();
             }
-        }
-
-        public void ResetToStartPosition()
-        {
-            Position = _startPositon;
         }
 
         private void CalculateCollision()
@@ -176,7 +176,7 @@
             {
                 var colDetectionRect = _bounds;
                 colDetectionRect.Inflate(0.2f, 0.2f);
-                var collisionRectsInflateOne = _tmxManager.GetObjectsInRegion(TMXDefaultLayerInfo.ObjectLayerWorld, colDetectionRect);
+                var collisionRectsInflateOne = _tmxManager.GetObjectsInRegion(TMXDefaultLayerInfo.ObjectLayerWorld, colDetectionRect).Where(x => x.Type != "platform");
 
                 if (!collisionRectsInflateOne.Any(x => (x.Bounds.Top == _bounds.Bottom)))
                 {
@@ -281,12 +281,12 @@
                 }
                 else if (!platformBounds.Intersects(BottomDetectBounds) && mp.Passenger != null)
                 {
-                    mp.Passenger = null;                
+                    mp.Passenger = null;
                 }
 
                 if (_jumpInitiated)
                 {
-                    mp.Passenger = null;                
+                    mp.Passenger = null;
                 }
             }
 
@@ -417,14 +417,14 @@
             }
             else if (direction.X == 0)
             {
-                _currentAcceleration = INITIAL_ACCELERATION;
+                _currentAcceleration = INITIALACCELERATION;
             }
         }
 
         private void ResetVelocity()
         {
             _velocity.X = 0f;
-            _currentAcceleration = INITIAL_ACCELERATION;
+            _currentAcceleration = INITIALACCELERATION;
         }
     }
 }

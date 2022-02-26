@@ -50,21 +50,30 @@
 
         public void PlaySound(int soundEffectIndex, float volumne = 0.4f)
         {
-            if (!SoundEnabled) { return; }
+            if (!SoundEnabled)
+            {
+                return;
+            }
 
             _soundEffects[soundEffectIndex].Play(volumne, 0f, 0f);
         }
 
         public void PlaySound(string soundEffectName, float volumne = 0.4f)
         {
-            if (!SoundEnabled) { return; }
+            if (!SoundEnabled)
+            {
+                return;
+            }
 
             _soundEffects.Where(x => x.Name.Equals(soundEffectName)).FirstOrDefault().Play(volumne, 0f, 0f);
         }
 
         public void PlaySoundTrack(int soundTrackIndex, float volumne = 0.4f)
         {
-            if (!MusicEnabled) { return; }
+            if (!MusicEnabled)
+            {
+                return;
+            }
 
             if (!IsPlayingSong(soundTrackIndex))
             {
