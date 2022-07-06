@@ -117,7 +117,7 @@
                 _currentAcceleration = 0.01f;
             }
 
-            if (OnGround && !_onTopOfLadder && (rightCollisionNextFrame || leftCollisionNextFrame))
+            if (((OnGround && !_onTopOfLadder) || GetAbility<Swimming>()?.IsInWater == true) && (rightCollisionNextFrame || leftCollisionNextFrame))
             {
                 ResetVelocity();
             }
