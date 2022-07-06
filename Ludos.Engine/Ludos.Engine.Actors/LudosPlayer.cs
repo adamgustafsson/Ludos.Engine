@@ -48,7 +48,7 @@
             Gravity = 600;
             Position = position;
             Size = size;
-            Speed = new Vector2(11, _bounds.Y > 16 ? 225 : 200);
+            Speed = new Vector2(11, _bounds.Size.Height > 16 ? 225 : 200);
 
             _velocity = new Vector2(0, 0);
             _tmxManager = tmxManager;
@@ -191,9 +191,15 @@
                     }
                 }
 
-                _imidiateTopCollisionExists = collisionRectsInflateOne.Any(x => (x.Bounds.Bottom == _bounds.Top)); // Object bottom is colliding.
-                _imidiateRightCollisionExists = collisionRectsInflateOne.Any(x => x.Bounds.Left == _bounds.Right.ToInt32());
-                _imidiateLeftCollisionExists = collisionRectsInflateOne.Any(x => x.Bounds.Right == _bounds.Left.ToInt32());
+                var topDetectBound = _bounds;
+                topDetectBound.Inflate(-0.2f, 0.2f);
+                _imidiateTopCollisionExists = collisionRectsInflateOne.Any(x => x.Bounds.Bottom == _bounds.Top.ToInt32() && x.Bounds.ToRectangleF().IntersectsWith(topDetectBound));
+
+                var leftRightDetectBound = _bounds;
+                leftRightDetectBound.Inflate(0.2f, -0.2f);
+
+                _imidiateRightCollisionExists = collisionRectsInflateOne.Any(x => x.Bounds.Left == _bounds.Right.ToInt32() && x.Bounds.ToRectangleF().IntersectsWith(leftRightDetectBound));
+                _imidiateLeftCollisionExists = collisionRectsInflateOne.Any(x => x.Bounds.Right == _bounds.Left.ToInt32() && x.Bounds.ToRectangleF().IntersectsWith(leftRightDetectBound));
             }
         }
 
@@ -255,7 +261,7 @@
                 _jumpInitiated,
                 water,
                 elapsedTime,
-                _inputManager.IsInputDown(InputName.ActionButton1));
+                _inputManager.IsInputDown(InputName.MoveDown));
         }
 
         private void CalculateMovingPlatformCollision()

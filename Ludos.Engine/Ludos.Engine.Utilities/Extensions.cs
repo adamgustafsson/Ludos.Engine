@@ -40,6 +40,11 @@
             return new Rectangle(sysRec.X, sysRec.Y, sysRec.Width, sysRec.Height);
         }
 
+        public static RectangleF ToRectangleF(this Rectangle rec)
+        {
+            return new RectangleF(rec.X, rec.Y, rec.Width, rec.Height);
+        }
+
         public static GraphicsDevice GetGraphicsDevice(this ContentManager content)
         {
             return ((IGraphicsDeviceService)content.ServiceProvider.GetService(typeof(IGraphicsDeviceService))).GraphicsDevice;
