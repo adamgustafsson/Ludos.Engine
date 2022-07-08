@@ -1,4 +1,4 @@
-﻿namespace Ludos.Engine.Tmx
+﻿namespace Ludos.Engine.Level
 {
     using FuncWorks.XNA.XTiled;
     using Ludos.Engine.Actors;

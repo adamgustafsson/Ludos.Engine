@@ -1,4 +1,4 @@
-﻿namespace Ludos.Engine.Tmx
+﻿namespace Ludos.Engine.Level
 {
     using System;
     using System.Collections.Generic;
@@ -9,7 +9,7 @@
     using Microsoft.Xna.Framework.Graphics;
     using RectangleF = System.Drawing.RectangleF;
 
-    public class TMXManager
+    public class LevelManager
     {
         private readonly List<Map> _maps;
         private readonly List<TMXMapInfo> _mapsInfo;
@@ -17,7 +17,7 @@
         private Dictionary<string, int> _layerIndexInfo;
         private Map _currentMap;
 
-        public TMXManager(ContentManager content, List<TMXMapInfo> mapsInfo)
+        public LevelManager(ContentManager content, List<TMXMapInfo> mapsInfo)
         {
             _maps = new List<Map>();
             _mapsInfo = mapsInfo;

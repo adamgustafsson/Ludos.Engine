@@ -4,7 +4,7 @@
     using Ludos.Engine.Actors;
     using Ludos.Engine.Graphics;
     using Ludos.Engine.Input;
-    using Ludos.Engine.Tmx;
+    using Ludos.Engine.Level;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Content;
     using Microsoft.Xna.Framework.Graphics;
@@ -17,7 +17,7 @@
         private readonly GraphicsDevice _graphicsDevice;
         private readonly InputManager _inputManager;
         private readonly Camera2D _camera;
-        private readonly TMXManager _tmxManager;
+        private readonly LevelManager _levelManager;
         private readonly LudosPlayer _player;
 
         private readonly Texture2D _debugPanelContainer;
@@ -35,7 +35,7 @@
             _fpsFont = debugTextFont;
             _graphicsDevice = services.GetService<ContentManager>().GetGraphicsDevice();
             _inputManager = services.GetService<InputManager>();
-            _tmxManager = services.GetService<TMXManager>();
+            _levelManager = services.GetService<LevelManager>();
             _camera = camera;
             _player = player;
 
@@ -160,9 +160,9 @@
 
             if (_drawCollision)
             {
-                _tmxManager.DrawObjectLayer(spriteBatch, TMXDefaultLayerInfo.ObjectLayerWorld, _camera.CameraBounds.Round(), 0f);
+                _levelManager.DrawObjectLayer(spriteBatch, TMXDefaultLayerInfo.ObjectLayerWorld, _camera.CameraBounds.Round(), 0f);
 
-                foreach (var platform in _tmxManager.MovingPlatforms)
+                foreach (var platform in _levelManager.MovingPlatforms)
                 {
                     DrawRectancgle(spriteBatch, platform.DetectionBounds, color: Color.Green);
                 }

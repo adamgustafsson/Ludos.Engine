@@ -3,7 +3,7 @@
     using System;
     using System.Collections.Generic;
     using Ludos.Engine.Input;
-    using Ludos.Engine.Tmx;
+    using Ludos.Engine.Level;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
 
@@ -12,7 +12,7 @@
         private RenderTarget2D _offScreenRenderTarget;
         private float _aspectRatio;
         private Point _oldWindowSize;
-        private TMXManager _tmxManager;
+        private LevelManager _levelManager;
         private InputManager _inputManager;
 
         public LudosGame()
@@ -36,13 +36,13 @@
 
         protected void InitializeGameServices(List<TMXMapInfo> tmxMapsInfo, Dictionary<string, Input> userControls)
         {
-            _tmxManager = new TMXManager(Content, tmxMapsInfo);
+            _levelManager = new LevelManager(Content, tmxMapsInfo);
             _inputManager = new InputManager(new System.Drawing.Size(Graphics.PreferredBackBufferWidth, Graphics.PreferredBackBufferHeight))
             {
                 UserControls = userControls,
             };
 
-            Services.AddService(_tmxManager);
+            Services.AddService(_levelManager);
             Services.AddService(_inputManager);
             Services.AddService(Content);
         }
@@ -51,7 +51,7 @@
         {
             if (!GameIsPaused)
             {
-                _tmxManager.Update(gameTime);
+                _levelManager.Update(gameTime);
             }
 
             _inputManager.Update(Window.ClientBounds);

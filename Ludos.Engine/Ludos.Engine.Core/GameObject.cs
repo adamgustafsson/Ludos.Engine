@@ -3,7 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Ludos.Engine.Tmx;
+    using Ludos.Engine.Level;
     using Ludos.Engine.Utilities;
     using Microsoft.Xna.Framework;
     using PointF = System.Drawing.PointF;
@@ -16,16 +16,16 @@
         private Vector2 _velocity;
         private RectangleF _lastPosition;
         private CollisionInformation _collisionInfo;
-        private TMXManager _tmxManager;
+        private LevelManager _levelManager;
 
-        public GameObject(float gravity, Vector2 position, Point size, TMXManager tmxManager)
+        public GameObject(float gravity, Vector2 position, Point size, LevelManager levelManager)
         {
             Gravity = gravity;
             Position = position;
             Size = size;
 
             _collisionInfo = default;
-            _tmxManager = tmxManager;
+            _levelManager = levelManager;
         }
 
         public enum CollisionLayers
@@ -70,7 +70,7 @@
         public virtual void CalculateTileCollision()
         {
             _collisionInfo = default;
-            var collisionRects = _tmxManager.GetObjectsInRegion(TMXDefaultLayerInfo.ObjectLayerWorld, _bounds.Round()).Where(x => x.Type != "platform");
+            var collisionRects = _levelManager.GetObjectsInRegion(TMXDefaultLayerInfo.ObjectLayerWorld, _bounds.Round()).Where(x => x.Type != "platform");
 
             foreach (var collisionRect in collisionRects)
             {
@@ -107,7 +107,7 @@
             {
                 var colDetectionRect = _bounds;
                 colDetectionRect.Inflate(0.2f, 0.2f);
-                var collisionRectsInflateOne = _tmxManager.GetObjectsInRegion(TMXDefaultLayerInfo.ObjectLayerWorld, colDetectionRect).Where(x => x.Type != "platform");
+                var collisionRectsInflateOne = _levelManager.GetObjectsInRegion(TMXDefaultLayerInfo.ObjectLayerWorld, colDetectionRect).Where(x => x.Type != "platform");
 
                 if (!collisionRectsInflateOne.Any(x => (x.Bounds.Top == _bounds.Bottom)))
                 {

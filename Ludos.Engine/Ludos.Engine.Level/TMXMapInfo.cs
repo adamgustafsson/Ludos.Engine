@@ -1,4 +1,4 @@
-﻿namespace Ludos.Engine.Tmx
+﻿namespace Ludos.Engine.Level
 {
     using System.Collections.Generic;
     using Microsoft.Xna.Framework;

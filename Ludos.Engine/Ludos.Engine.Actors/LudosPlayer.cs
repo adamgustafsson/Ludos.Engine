@@ -4,7 +4,7 @@
     using System.Linq;
     using FuncWorks.XNA.XTiled;
     using Ludos.Engine.Input;
-    using Ludos.Engine.Tmx;
+    using Ludos.Engine.Level;
     using Ludos.Engine.Utilities;
     using Microsoft.Xna.Framework;
     using PointF = System.Drawing.PointF;
@@ -14,7 +14,7 @@
     {
         private const float INITIALACCELERATION = 0.001f;
 
-        private TMXManager _tmxManager;
+        private LevelManager _levelManager;
         private InputManager _inputManager;
 
         private Vector2 _startPositon;
@@ -31,12 +31,12 @@
         private float _currentAcceleration = INITIALACCELERATION;
 
         public LudosPlayer(Vector2 position, Point size, GameServiceContainer services)
-            : this(position, size, services.GetService<TMXManager>(), services.GetService<InputManager>())
+            : this(position, size, services.GetService<LevelManager>(), services.GetService<InputManager>())
         {
         }
 
-        public LudosPlayer(Vector2 position, Point size, TMXManager tmxManager, InputManager inputManager)
-            : base(gravity: 600, position, size, tmxManager)
+        public LudosPlayer(Vector2 position, Point size, LevelManager levelManager, InputManager inputManager)
+            : base(gravity: 600, position, size, levelManager)
         {
             UseDefaultGravity = false;
             Position = position;
@@ -44,7 +44,7 @@
             Speed = new Vector2(11, Bounds.Size.Height > 16 ? 225 : 200);
 
             Velocity = new Vector2(0, 0);
-            _tmxManager = tmxManager;
+            _levelManager = levelManager;
             _inputManager = inputManager;
             _startPositon = position;
 
@@ -171,7 +171,7 @@
                 }
             }
 
-            var ladders = _tmxManager.GetObjectsInRegion(TMXDefaultLayerInfo.ObjectLayerInteractableObjects, ladderDetectionBounds).Where(x => x.Type == "ladder");
+            var ladders = _levelManager.GetObjectsInRegion(TMXDefaultLayerInfo.ObjectLayerInteractableObjects, ladderDetectionBounds).Where(x => x.Type == "ladder");
             _ladderIsAvailable = ladders.Any();
 
             if (!_ladderIsAvailable)
@@ -201,7 +201,7 @@
                 return;
             }
 
-            var water = _tmxManager.GetObjectsInRegion(TMXDefaultLayerInfo.ObjectLayerWater, Bounds);
+            var water = _levelManager.GetObjectsInRegion(TMXDefaultLayerInfo.ObjectLayerWater, Bounds);
             var velocityRef = Velocity;
 
             GetAbility<Swimming>().Update(
@@ -220,7 +220,7 @@
         {
             _onMovingPlatform = false;
 
-            foreach (var mp in _tmxManager.MovingPlatforms)
+            foreach (var mp in _levelManager.MovingPlatforms)
             {
                 var platformBounds = mp.Bounds;
 
@@ -248,7 +248,7 @@
                 }
             }
 
-            _onMovingPlatform = _tmxManager.MovingPlatforms.Any(x => x.Passenger != null);
+            _onMovingPlatform = _levelManager.MovingPlatforms.Any(x => x.Passenger != null);
 
             if (_onMovingPlatform)
             {

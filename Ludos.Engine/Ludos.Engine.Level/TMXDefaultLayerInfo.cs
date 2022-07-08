@@ -1,4 +1,4 @@
-﻿namespace Ludos.Engine.Tmx
+﻿namespace Ludos.Engine.Level
 {
     public static class TMXDefaultLayerInfo
     {

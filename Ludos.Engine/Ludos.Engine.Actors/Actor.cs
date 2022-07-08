@@ -3,7 +3,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using Ludos.Engine.Core;
-    using Ludos.Engine.Tmx;
+    using Ludos.Engine.Level;
     using Microsoft.Xna.Framework;
     using RectangleF = System.Drawing.RectangleF;
 
@@ -11,8 +11,8 @@
     {
         private Direction _previousDirection;
 
-        public Actor(float gravity, Vector2 position, Point size, TMXManager tmxManager)
-            : base(gravity, position, size, tmxManager)
+        public Actor(float gravity, Vector2 position, Point size, LevelManager levelManager)
+            : base(gravity, position, size, levelManager)
         {
         }
 
