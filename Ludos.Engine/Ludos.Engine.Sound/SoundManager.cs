@@ -91,7 +91,10 @@
 
         public void PlaySoundTrack(string soundTrackName, float volumne = 0.4f)
         {
-            if (!MusicEnabled) { return; }
+            if (!MusicEnabled)
+            {
+                return;
+            }
 
             var soundTrack = _soundTracks.Where(x => x.Name.Equals(soundTrackName)).FirstOrDefault();
 

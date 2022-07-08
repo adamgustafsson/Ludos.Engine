@@ -9,7 +9,6 @@
     using Microsoft.Xna.Framework;
     using PointF = System.Drawing.PointF;
     using RectangleF = System.Drawing.RectangleF;
-    using SizeF = System.Drawing.SizeF;
 
     public class LudosPlayer : Actor
     {
@@ -18,15 +17,8 @@
         private TMXManager _tmxManager;
         private InputManager _inputManager;
 
-        private RectangleF _lastPosition;
         private Vector2 _startPositon;
-        private Vector2 _velocity;
         private Vector2 _prevVelocity;
-        private RectangleF _bounds;
-
-        private bool _imidiateTopCollisionExists;
-        private bool _imidiateLeftCollisionExists;
-        private bool _imidiateRightCollisionExists;
 
         private bool _jumpButtonPressedDown = false;
         private bool _jumpInitiated;
@@ -44,56 +36,47 @@
         }
 
         public LudosPlayer(Vector2 position, Point size, TMXManager tmxManager, InputManager inputManager)
+            : base(gravity: 600, position, size, tmxManager)
         {
-            Gravity = 600;
+            UseDefaultGravity = false;
             Position = position;
             Size = size;
-            Speed = new Vector2(11, _bounds.Size.Height > 16 ? 225 : 200);
+            Speed = new Vector2(11, Bounds.Size.Height > 16 ? 225 : 200);
 
-            _velocity = new Vector2(0, 0);
+            Velocity = new Vector2(0, 0);
             _tmxManager = tmxManager;
             _inputManager = inputManager;
             _startPositon = position;
 
             Abilities.AddRange(new List<IAbility>() { new WallJump(), new DoubleJump(), new Swimming(Gravity, Speed, Swimming.DivingBehavior.DiveOnButtonPress) });
-            //GetAbility<DoubleJump>().AbilityEnabled = false;
-            //GetAbility<Swimming>().AbilityEnabled = false;
         }
 
         public float HorizontalAcceleration { get; set; } = 0.15f;
-        public override Vector2 Velocity { get => _velocity; }
-        public override RectangleF Bounds { get => _bounds; }
-        public override Vector2 Position { get => new Vector2(_bounds.X, _bounds.Y); set => _bounds.Location = new PointF(value.X, value.Y); }
-        public override Point Size { set => _bounds.Size = new SizeF(value.X, value.Y); }
+
         public void ResetToStartPosition()
         {
             Position = _startPositon;
         }
 
-        public virtual void Update(float elapsedTime)
+        public override void Update(float elapsedTime)
         {
-            _lastPosition = _bounds;
-
             var direction = GetDirection();
             Accelerate(ref direction);
-            _velocity = CalculateMoveVelocity(_velocity, direction, Speed, elapsedTime);
+            Velocity = CalculateMoveVelocity(Velocity, direction, Speed, elapsedTime);
 
             AdjustVelocityOnPreviousCollision();
 
-            var currentPosition = new Vector2(_bounds.X, _bounds.Y);
-            currentPosition += _velocity * elapsedTime;
+            // Basic world collision.
+            base.Update(elapsedTime);
+            HandleEventsOnCollision();
 
-            _bounds.X = currentPosition.X;
-            _bounds.Y = currentPosition.Y;
-
-            CalculateCollision();
             CalculateLadderCollision();
             CalculateWaterCollision(elapsedTime);
             CalculateMovingPlatformCollision();
             SetState();
             SetDirection();
 
-            BottomDetectBounds = new RectangleF(_bounds.X, _bounds.Y + (_bounds.Height * 0.90f), _bounds.Width, _bounds.Height * 0.20f);
+            BottomDetectBounds = new RectangleF(Bounds.X, Bounds.Y + (Bounds.Height * 0.90f), Bounds.Width, Bounds.Height * 0.20f);
 
             if (AbilityIsActive<DoubleJump>())
             {
@@ -103,14 +86,14 @@
                 }
             }
 
-            _prevVelocity = _velocity;
+            _prevVelocity = Velocity;
         }
 
         private void AdjustVelocityOnPreviousCollision()
         {
-            var changedDirection = (_velocity.X > 0 && _prevVelocity.X < 0) || (_velocity.X < 0 && _prevVelocity.X > 0);
-            var rightCollisionNextFrame = _imidiateRightCollisionExists && _velocity.X > 0;
-            var leftCollisionNextFrame = _imidiateLeftCollisionExists && _velocity.X < 0;
+            var changedDirection = (Velocity.X > 0 && _prevVelocity.X < 0) || (Velocity.X < 0 && _prevVelocity.X > 0);
+            var rightCollisionNextFrame = CollisionInfo.ImidiateRightCollisionExists && Velocity.X > 0;
+            var leftCollisionNextFrame = CollisionInfo.ImidiateLeftCollisionExists && Velocity.X < 0;
 
             if (changedDirection)
             {
@@ -120,93 +103,57 @@
             if (((OnGround && !_onTopOfLadder) || GetAbility<Swimming>()?.IsInWater == true) && (rightCollisionNextFrame || leftCollisionNextFrame))
             {
                 ResetVelocity();
+                _currentAcceleration = INITIALACCELERATION;
             }
         }
 
-        private void CalculateCollision()
+        private void HandleEventsOnCollision()
         {
-            var collisionRects = _tmxManager.GetObjectsInRegion(TMXDefaultLayerInfo.ObjectLayerWorld, _bounds.Round()).Where(x => x.Type != "platform");
-
-            foreach (var collisionRect in collisionRects)
+            if (CollisionInfo.IsGroundCollision)
             {
-                var isGroundCollision = _lastPosition.Bottom.ToInt32() <= collisionRect.Bounds.Top && _bounds.Bottom.ToInt32() >= collisionRect.Bounds.Top;
-                var isRoofCollision = _lastPosition.Top.ToInt32() >= collisionRect.Bounds.Bottom && _bounds.Top.ToInt32() < collisionRect.Bounds.Bottom;
-                var isRightCollision = _lastPosition.Right.ToInt32() <= collisionRect.Bounds.Left && _bounds.Right.ToInt32() >= collisionRect.Bounds.Left;
-                var isLeftCollision = _lastPosition.Left.ToInt32() >= collisionRect.Bounds.Right && _bounds.Left.ToInt32() <= collisionRect.Bounds.Right;
+                GetAbility<WallJump>()?.ResetAbility();
+                GetAbility<DoubleJump>()?.ResetAbility();
+            }
+            else if (CollisionInfo.IsRoofCollision)
+            {
+                GetAbility<WallJump>()?.ResetAbility();
+            }
+            else if (CollisionInfo.IsRightCollision)
+            {
+                _currentAcceleration = INITIALACCELERATION;
 
-                if (isGroundCollision && !OnGround)
+                if (AbilityIsActive<WallJump>() && !OnGround)
                 {
-                    SetGrounded(new PointF(_lastPosition.X, collisionRect.Bounds.Top - _bounds.Height));
-                }
-                else if (isRoofCollision)
-                {
-                    _velocity.Y = 0;
-                    _bounds.Location = new PointF(_lastPosition.X, collisionRect.Bounds.Bottom);
-
-                    GetAbility<WallJump>()?.ResetAbility();
-                }
-                else if (isRightCollision)
-                {
-                    _bounds.X = collisionRect.Bounds.Left - _bounds.Width;
-                    ResetVelocity();
-
-                    if (AbilityIsActive<WallJump>() && !OnGround)
-                    {
-                        GetAbility<WallJump>().InitiateWallclinging(direction: WallJump.ClingDir.Right);
-                        GetAbility<DoubleJump>()?.ResetAbility();
-                    }
-                }
-                else if (isLeftCollision)
-                {
-                    _bounds.X = collisionRect.Bounds.Right;
-                    _velocity.X = 0;
-                    ResetVelocity();
-
-                    if (AbilityIsActive<WallJump>() && !OnGround)
-                    {
-                        GetAbility<WallJump>().InitiateWallclinging(direction: WallJump.ClingDir.Left);
-                        GetAbility<DoubleJump>()?.ResetAbility();
-                    }
+                    GetAbility<WallJump>().InitiateWallclinging(direction: WallJump.ClingDir.Right);
+                    GetAbility<DoubleJump>()?.ResetAbility();
                 }
             }
-
-            // If no ordinary collisions are detected - do an additional check with a +1 inflated rectancle in
-            // order to determine if the actor is positioned immediately next to a collision.
-            if (!collisionRects.Any())
+            else if (CollisionInfo.IsLeftCollision)
             {
-                var colDetectionRect = _bounds;
-                colDetectionRect.Inflate(0.2f, 0.2f);
-                var collisionRectsInflateOne = _tmxManager.GetObjectsInRegion(TMXDefaultLayerInfo.ObjectLayerWorld, colDetectionRect).Where(x => x.Type != "platform");
+                _currentAcceleration = INITIALACCELERATION;
 
-                if (!collisionRectsInflateOne.Any(x => (x.Bounds.Top == _bounds.Bottom)))
+                if (AbilityIsActive<WallJump>() && !OnGround)
                 {
-                    OnGround = false;
+                    GetAbility<WallJump>().InitiateWallclinging(direction: WallJump.ClingDir.Left);
+                    GetAbility<DoubleJump>()?.ResetAbility();
                 }
-
+            }
+            else
+            {
                 if (AbilityIsActive<WallJump>())
                 {
-                    if (GetAbility<WallJump>().IsWallClinging && (!collisionRectsInflateOne.Any(x => x.Bounds.Left == _bounds.Right) && !collisionRectsInflateOne.Any(x => x.Bounds.Right == _bounds.Left)))
+                    if (GetAbility<WallJump>().IsWallClinging && !CollisionInfo.ImidiateLeftCollisionExists && !CollisionInfo.ImidiateRightCollisionExists)
                     {
                         GetAbility<WallJump>().ResetWallClinging();
                     }
                 }
-
-                var topDetectBound = _bounds;
-                topDetectBound.Inflate(-0.2f, 0.2f);
-                _imidiateTopCollisionExists = collisionRectsInflateOne.Any(x => x.Bounds.Bottom == _bounds.Top.ToInt32() && x.Bounds.ToRectangleF().IntersectsWith(topDetectBound));
-
-                var leftRightDetectBound = _bounds;
-                leftRightDetectBound.Inflate(0.2f, -0.2f);
-
-                _imidiateRightCollisionExists = collisionRectsInflateOne.Any(x => x.Bounds.Left == _bounds.Right.ToInt32() && x.Bounds.ToRectangleF().IntersectsWith(leftRightDetectBound));
-                _imidiateLeftCollisionExists = collisionRectsInflateOne.Any(x => x.Bounds.Right == _bounds.Left.ToInt32() && x.Bounds.ToRectangleF().IntersectsWith(leftRightDetectBound));
             }
         }
 
         private void CalculateLadderCollision()
         {
-            var ladderDetectionBounds = _bounds;
-            ladderDetectionBounds.Inflate(-(_bounds.Width * 0.60f), 0f);
+            var ladderDetectionBounds = Bounds;
+            ladderDetectionBounds.Inflate(-(Bounds.Width * 0.60f), 0f);
 
             _onTopOfLadder = false;
 
@@ -214,11 +161,13 @@
             {
                 _onTopOfLadder = (ladderDetectionBounds.Right <= _mostRecentLadder.Bounds.Right) &&
                     (ladderDetectionBounds.Left >= _mostRecentLadder.Bounds.Left) &&
-                    (_lastPosition.Bottom.ToInt32() <= _mostRecentLadder.Bounds.Top && _bounds.Bottom.ToInt32() >= _mostRecentLadder.Bounds.Top);
+                    (LastPosition.Bottom.ToInt32() <= _mostRecentLadder.Bounds.Top && Bounds.Bottom.ToInt32() >= _mostRecentLadder.Bounds.Top);
 
                 if (_onTopOfLadder)
                 {
-                    SetGrounded(new PointF(_bounds.X, _mostRecentLadder.Bounds.Top - _bounds.Height));
+                    SetGrounded(new PointF(Bounds.X, _mostRecentLadder.Bounds.Top - Bounds.Height));
+                    GetAbility<WallJump>()?.ResetAbility();
+                    GetAbility<DoubleJump>()?.ResetAbility();
                 }
             }
 
@@ -235,12 +184,12 @@
 
                 if (!(OnGround && !_onTopOfLadder))
                 {
-                    _bounds.X = _mostRecentLadder.Bounds.X;
+                    Position = new Vector2(_mostRecentLadder.Bounds.X, Position.Y);
                 }
 
                 if (_onTopOfLadder)
                 {
-                    _bounds.Y = _bounds.Y + (_bounds.Height / 4);
+                    Position = new Vector2(Position.X, Bounds.Y + (Bounds.Height / 4));
                 }
             }
         }
@@ -252,16 +201,19 @@
                 return;
             }
 
-            var water = _tmxManager.GetObjectsInRegion(TMXDefaultLayerInfo.ObjectLayerWater, _bounds);
+            var water = _tmxManager.GetObjectsInRegion(TMXDefaultLayerInfo.ObjectLayerWater, Bounds);
+            var velocityRef = Velocity;
 
             GetAbility<Swimming>().Update(
                 this,
-                ref _velocity,
-                _lastPosition.Y,
+                ref velocityRef,
+                LastPosition.Y,
                 _jumpInitiated,
                 water,
                 elapsedTime,
                 _inputManager.IsInputDown(InputName.MoveDown));
+
+            Velocity = velocityRef;
         }
 
         private void CalculateMovingPlatformCollision()
@@ -274,9 +226,9 @@
 
                 // The small adjustment at the end is done if the platform is moving vertically in order to ensure collision when
                 // doing small jumps on a plafrorm moving upwards.
-                var collisionFromAbove = _lastPosition.Bottom <= mp.Bounds.Top + (mp.Change.Y < 0 ? 2 : 0);
+                var collisionFromAbove = LastPosition.Bottom <= mp.Bounds.Top + (mp.Change.Y < 0 ? 2 : 0);
 
-                if (platformBounds.Intersects(_bounds))
+                if (platformBounds.Intersects(Bounds))
                 {
                     if (mp.Passenger == null && collisionFromAbove)
                     {
@@ -300,18 +252,8 @@
 
             if (_onMovingPlatform)
             {
-                _velocity.Y = _velocity.Y > 0 ? 0 : _velocity.Y;
+                Velocity = new Vector2(Velocity.X, Velocity.Y > 0 ? 0 : Velocity.Y);
             }
-        }
-
-        private void SetGrounded(PointF currentPosition)
-        {
-            _bounds.Location = currentPosition;
-            OnGround = true;
-            _velocity.Y = _velocity.Y > 0 ? 0 : _velocity.Y;
-
-            GetAbility<WallJump>()?.ResetAbility();
-            GetAbility<DoubleJump>()?.ResetAbility();
         }
 
         private Vector2 CalculateMoveVelocity(Vector2 linearVelocity, Vector2 direction, Vector2 speed, float elapsedTime)
@@ -325,7 +267,7 @@
             if (AbilityIsActive<WallJump>())
             {
                 var useDefaultYVelocity = false;
-                newVelocity = GetAbility<WallJump>().CalculatVelocity(newVelocity, speed, _jumpInitiated, ref direction, ref _currentAcceleration, ref useDefaultYVelocity, wallJumpVelocity: _bounds.Height > 16 ? 50 : 25);
+                newVelocity = GetAbility<WallJump>().CalculatVelocity(newVelocity, speed, _jumpInitiated, ref direction, ref _currentAcceleration, ref useDefaultYVelocity, wallJumpVelocity: Bounds.Height > 16 ? 50 : 25);
                 newVelocity.Y = useDefaultYVelocity ? defaultVelocityY : newVelocity.Y;
             }
             else
@@ -335,7 +277,7 @@
             }
 
             // Standard single jump.
-            if (_jumpInitiated && !_imidiateTopCollisionExists && !(GetAbility<WallJump>()?.IsWallClinging ?? false))
+            if (_jumpInitiated && !CollisionInfo.ImidiateTopCollisionExists && !(GetAbility<WallJump>()?.IsWallClinging ?? false))
             {
                 newVelocity.Y = speed.Y * direction.Y;
                 OnGround = false;
@@ -425,12 +367,6 @@
             {
                 _currentAcceleration = INITIALACCELERATION;
             }
-        }
-
-        private void ResetVelocity()
-        {
-            _velocity.X = 0f;
-            _currentAcceleration = INITIALACCELERATION;
         }
     }
 }

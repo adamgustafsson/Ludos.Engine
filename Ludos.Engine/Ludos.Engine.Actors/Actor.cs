@@ -2,12 +2,19 @@
 {
     using System.Collections.Generic;
     using System.Linq;
+    using Ludos.Engine.Core;
+    using Ludos.Engine.Tmx;
     using Microsoft.Xna.Framework;
     using RectangleF = System.Drawing.RectangleF;
 
-    public abstract class Actor
+    public abstract class Actor : GameObject
     {
         private Direction _previousDirection;
+
+        public Actor(float gravity, Vector2 position, Point size, TMXManager tmxManager)
+            : base(gravity, position, size, tmxManager)
+        {
+        }
 
         public enum State
         {
@@ -28,18 +35,12 @@
             Right = 1,
         }
 
-        public abstract Vector2 Position { get; set; }
-        public abstract Vector2 Velocity { get; }
-        public abstract RectangleF Bounds { get; }
-        public abstract Point Size { set; }
         public RectangleF BottomDetectBounds { get; set; }
         public Vector2 Speed { get; set; } = Vector2.Zero;
         public State CurrentState { get; private set; }
         public State PreviousState { get; private set; }
         public Direction CurrentDirection { get; private set; } = Direction.Right;
         public List<IAbility> Abilities { get; set; } = new List<IAbility>();
-        public float Gravity { get; set; }
-        public bool OnGround { get; set; }
         protected bool OnLadder { get; set; }
 
         public void SetState()
