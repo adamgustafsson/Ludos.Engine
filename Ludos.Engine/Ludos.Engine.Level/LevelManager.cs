@@ -85,6 +85,16 @@
             return _currentMap.GetObjectsInRegion(_layerIndexInfo[layerName], region);
         }
 
+        public IEnumerable<MapObject> GetObjectsInRegion(string layerName, Rectangle region, string type)
+        {
+            return _currentMap.GetObjectsInRegion(_layerIndexInfo[layerName], region).Where(x => x.Type.ToLower().Equals(type.ToLower()));
+        }
+
+        public IEnumerable<MapObject> GetAllLayerObjects(string layer)
+        {
+            return _currentMap.ObjectLayers[layer].MapObjects;
+        }
+
         public void DrawTileLayers(SpriteBatch spriteBatch, RectangleF region, float layerDepth)
         {
             for (int i = 0; i < _maps[_currentLevelIndex].TileLayers.Count; i++)
@@ -170,7 +180,7 @@
         {
             MovingPlatforms = new List<MovingPlatform>();
 
-            foreach (var mapObject in _currentMap.ObjectLayers[TMXDefaultLayerInfo.ObjectLayerWorld].MapObjects.Where(x => x.Polyline != null))
+            foreach (var mapObject in GetAllLayerObjects(TMXDefaultLayerInfo.ObjectLayerWorld).Where(x => x.Polyline != null))
             {
                 MovingPlatforms.Add(new MovingPlatform(mapObject.Polyline, _mapsInfo[_currentLevelIndex].MovingPlatformSize));
             }

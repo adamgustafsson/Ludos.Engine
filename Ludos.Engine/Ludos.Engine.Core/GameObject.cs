@@ -47,6 +47,7 @@
         public CollisionInformation CollisionInfo { get => _collisionInfo; set => _collisionInfo = value; }
 
         public List<CollisionLayers> CollidingLayers { get; set; } = new List<CollisionLayers>() { CollisionLayers.Ground };
+        public List<GameObject> AdditionalCollisionObjects { get; set; } = new List<GameObject>();
 
         public virtual void Update(float elapsedTime)
         {
@@ -70,32 +71,37 @@
         public virtual void CalculateTileCollision()
         {
             _collisionInfo = default;
-            var collisionRects = _levelManager.GetObjectsInRegion(TMXDefaultLayerInfo.ObjectLayerWorld, _bounds.Round()).Where(x => x.Type != "platform");
+            var collisionRects = _levelManager.GetObjectsInRegion(TMXDefaultLayerInfo.ObjectLayerWorld, _bounds.Round()).Where(x => x.Type != "platform").Select(x => x.Bounds).ToList();
+
+            if (AdditionalCollisionObjects != null)
+            {
+                collisionRects.AddRange(AdditionalCollisionObjects.Where(x => x.Bounds.IntersectsWith(_bounds)).Select(x => x.Bounds.Round()));
+            }
 
             foreach (var collisionRect in collisionRects)
             {
-                _collisionInfo.IsGroundCollision = _lastPosition.Bottom.ToInt32() <= collisionRect.Bounds.Top && _bounds.Bottom.ToInt32() >= collisionRect.Bounds.Top;
-                _collisionInfo.IsRoofCollision = _lastPosition.Top.ToInt32() >= collisionRect.Bounds.Bottom && _bounds.Top.ToInt32() < collisionRect.Bounds.Bottom;
-                _collisionInfo.IsRightCollision = _lastPosition.Right.ToInt32() <= collisionRect.Bounds.Left && _bounds.Right.ToInt32() >= collisionRect.Bounds.Left;
-                _collisionInfo.IsLeftCollision = _lastPosition.Left.ToInt32() >= collisionRect.Bounds.Right && _bounds.Left.ToInt32() <= collisionRect.Bounds.Right;
+                _collisionInfo.IsGroundCollision = _lastPosition.Bottom.ToInt32() <= collisionRect.Top && _bounds.Bottom.ToInt32() >= collisionRect.Top;
+                _collisionInfo.IsRoofCollision = _lastPosition.Top.ToInt32() >= collisionRect.Bottom && _bounds.Top.ToInt32() < collisionRect.Bottom;
+                _collisionInfo.IsRightCollision = _lastPosition.Right.ToInt32() <= collisionRect.Left && _bounds.Right.ToInt32() >= collisionRect.Left;
+                _collisionInfo.IsLeftCollision = _lastPosition.Left.ToInt32() >= collisionRect.Right && _bounds.Left.ToInt32() <= collisionRect.Right;
 
                 if (_collisionInfo.IsGroundCollision && !OnGround)
                 {
-                     SetGrounded(new PointF(_lastPosition.X, collisionRect.Bounds.Top - _bounds.Height));
+                     SetGrounded(new PointF(_lastPosition.X, collisionRect.Top - _bounds.Height));
                 }
                 else if (_collisionInfo.IsRoofCollision)
                 {
                     _velocity.Y = 0;
-                    _bounds.Location = new PointF(_lastPosition.X, collisionRect.Bounds.Bottom);
+                    _bounds.Location = new PointF(_lastPosition.X, collisionRect.Bottom);
                 }
                 else if (_collisionInfo.IsRightCollision)
                 {
-                    _bounds.X = collisionRect.Bounds.Left - _bounds.Width;
+                    _bounds.X = collisionRect.Left - _bounds.Width;
                     ResetVelocity();
                 }
                 else if (_collisionInfo.IsLeftCollision)
                 {
-                    _bounds.X = collisionRect.Bounds.Right;
+                    _bounds.X = collisionRect.Right;
                     _velocity.X = 0;
                     ResetVelocity();
                 }
@@ -107,22 +113,27 @@
             {
                 var colDetectionRect = _bounds;
                 colDetectionRect.Inflate(0.2f, 0.2f);
-                var collisionRectsInflateOne = _levelManager.GetObjectsInRegion(TMXDefaultLayerInfo.ObjectLayerWorld, colDetectionRect).Where(x => x.Type != "platform");
+                var collisionRectsInflateOne = _levelManager.GetObjectsInRegion(TMXDefaultLayerInfo.ObjectLayerWorld, colDetectionRect).Where(x => x.Type != "platform").Select(x => x.Bounds).ToList();
 
-                if (!collisionRectsInflateOne.Any(x => (x.Bounds.Top == _bounds.Bottom)))
+                if (AdditionalCollisionObjects != null)
+                {
+                    collisionRectsInflateOne.AddRange(AdditionalCollisionObjects.Where(x => x.Bounds.IntersectsWith(colDetectionRect)).Select(x => x.Bounds.Round()));
+                }
+
+                if (!collisionRectsInflateOne.Any(x => (x.Top == _bounds.Bottom)))
                 {
                     OnGround = false;
                 }
 
                 var topDetectBound = _bounds;
                 topDetectBound.Inflate(-0.2f, 0.2f);
-                _collisionInfo.ImidiateTopCollisionExists = collisionRectsInflateOne.Any(x => x.Bounds.Bottom == _bounds.Top.ToInt32() && x.Bounds.ToRectangleF().IntersectsWith(topDetectBound));
+                _collisionInfo.ImidiateTopCollisionExists = collisionRectsInflateOne.Any(x => x.Bottom == _bounds.Top.ToInt32() && x.ToRectangleF().IntersectsWith(topDetectBound));
 
                 var leftRightDetectBound = _bounds;
                 leftRightDetectBound.Inflate(0.2f, -0.2f);
 
-                _collisionInfo.ImidiateRightCollisionExists = collisionRectsInflateOne.Any(x => x.Bounds.Left == _bounds.Right.ToInt32() && x.Bounds.ToRectangleF().IntersectsWith(leftRightDetectBound));
-                _collisionInfo.ImidiateLeftCollisionExists = collisionRectsInflateOne.Any(x => x.Bounds.Right == _bounds.Left.ToInt32() && x.Bounds.ToRectangleF().IntersectsWith(leftRightDetectBound));
+                _collisionInfo.ImidiateRightCollisionExists = collisionRectsInflateOne.Any(x => x.Left == _bounds.Right.ToInt32() && x.ToRectangleF().IntersectsWith(leftRightDetectBound));
+                _collisionInfo.ImidiateLeftCollisionExists = collisionRectsInflateOne.Any(x => x.Right == _bounds.Left.ToInt32() && x.ToRectangleF().IntersectsWith(leftRightDetectBound));
             }
         }
 
