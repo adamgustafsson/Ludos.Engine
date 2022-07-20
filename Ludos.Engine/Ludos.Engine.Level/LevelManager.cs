@@ -180,9 +180,9 @@
         {
             MovingPlatforms = new List<MovingPlatform>();
 
-            foreach (var mapObject in GetAllLayerObjects(TMXDefaultLayerInfo.ObjectLayerWorld).Where(x => x.Polyline != null))
+            foreach (var mapObject in GetAllLayerObjects(TMXDefaultLayerInfo.ObjectLayerWorld).Where(x => x.Type?.ToLower() == TMXDefaultTypes.Platforms.ToLower()))
             {
-                MovingPlatforms.Add(new MovingPlatform(mapObject.Polyline, _mapsInfo[_currentLevelIndex].MovingPlatformSize));
+                MovingPlatforms.Add(new MovingPlatform(mapObject.Polyline, _mapsInfo[_currentLevelIndex].MovingPlatformSize, _mapsInfo[_currentLevelIndex].MovingPlatformSpeed));
             }
         }
     }

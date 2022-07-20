@@ -15,8 +15,10 @@
         private PointF _change;
         private RectangleF _platform;
         private RectangleF _detectionBounds;
+        private float _defaultSpeed = 75;
+        private float _speed;
 
-        public MovingPlatform(Polyline polylinePath, Point size)
+        public MovingPlatform(Polyline polylinePath, Point size, float speedPct = 1)
         {
             _path = polylinePath;
             _direction = 1;
@@ -24,6 +26,7 @@
             _change = new PointF(0, 0);
             _position = new Vector2(polylinePath.Bounds.X, polylinePath.Bounds.Y);
             _platform = new RectangleF(_position.X, _position.Y, size.X, size.Y);
+            _speed = _defaultSpeed * speedPct;
         }
 
         public RectangleF DetectionBounds { get => _detectionBounds; }
@@ -61,7 +64,7 @@
             }
 
             float targetPct = (_path.Lines[_currentLine].Length - Vector2.Distance(_position, _path.Lines[_currentLine].End)
-                                + ((a_elapsedTime * 75) * _direction)) / _path.Lines[_currentLine].Length;
+                                + ((a_elapsedTime * _speed) * _direction)) / _path.Lines[_currentLine].Length;
 
             _position = Vector2.Lerp(_path.Lines[_currentLine].Start, _path.Lines[_currentLine].End, targetPct);
             _change.X = _position.X - _platform.X;

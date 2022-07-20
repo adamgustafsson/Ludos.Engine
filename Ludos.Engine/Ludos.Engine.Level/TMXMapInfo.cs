@@ -9,5 +9,6 @@
         public string ResourcePath;
         public List<string> NonDefaultLayerNames;
         public Point MovingPlatformSize;
+        public float MovingPlatformSpeed;
     }
 }
