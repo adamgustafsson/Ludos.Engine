@@ -19,6 +19,7 @@
         private readonly Camera2D _camera;
         private readonly LevelManager _levelManager;
         private readonly LudosPlayer _player;
+        private readonly Point _viewport;
 
         private readonly Texture2D _debugPanelContainer;
         private readonly Texture2D _infoContainer;
@@ -38,11 +39,12 @@
             _levelManager = services.GetService<LevelManager>();
             _camera = camera;
             _player = player;
+            _viewport = new Point(_graphicsDevice.Viewport.Width, _graphicsDevice.Viewport.Height);
 
             _debugPanelContainer = Utilities.CreateTexture2D(_graphicsDevice, new Point(265, 89), Color.Black, 0.50f);
             _infoContainer = Utilities.CreateTexture2D(_graphicsDevice, new Point(265, 190), Color.Black, 0.50f);
 
-            var proceduralCheckBox = new ProceduralTexture(_graphicsDevice, new Rectangle(1884, 12, 19, 16))
+            var proceduralCheckBox = new ProceduralTexture(_graphicsDevice, new Rectangle(_viewport.X - 36, 12, 19, 16))
             {
                 TextureColors = new Color[] { Color.Black },
                 Transparancy = 0.7f,
@@ -90,11 +92,15 @@
 
         public void DrawDebugPanel(SpriteBatch spriteBatch, GameTime gameTime)
         {
-            spriteBatch.Draw(_debugPanelContainer, new Vector2(1651, 5), Color.White);
-            spriteBatch.DrawString(_fpsFont, "Show collision", new Vector2(1661, 12f), Color.LightGray);
-            spriteBatch.DrawString(_fpsFont, "Show camera movement bounds", new Vector2(1661, 31f), Color.LightGray);
-            spriteBatch.DrawString(_fpsFont, "Show debug info", new Vector2(1661, 50f), Color.LightGray);
-            spriteBatch.DrawString(_fpsFont, "Show player collision", new Vector2(1661, 69f), Color.LightGray);
+            var textStartPosX = _viewport.X - 259;
+            var textStartPosY = 12;
+            var textTopMargin = 19;
+
+            spriteBatch.Draw(_debugPanelContainer, new Vector2(_viewport.X - 269, 5), Color.White);
+            spriteBatch.DrawString(_fpsFont, "Show collision", new Vector2(textStartPosX, textStartPosY), Color.LightGray);
+            spriteBatch.DrawString(_fpsFont, "Show camera movement bounds", new Vector2(textStartPosX, textStartPosY + textTopMargin), Color.LightGray);
+            spriteBatch.DrawString(_fpsFont, "Show debug info", new Vector2(textStartPosX, textStartPosY + (textTopMargin * 2)), Color.LightGray);
+            spriteBatch.DrawString(_fpsFont, "Show player collision", new Vector2(textStartPosX, textStartPosY + (textTopMargin * 3)), Color.LightGray);
 
             if (_inputManager.LeftClicked(_checkBoxes[0].Rectangle))
             {
@@ -134,16 +140,20 @@
 
         public void DrawDebugInfo(SpriteBatch spriteBatch, LudosPlayer player)
         {
-            spriteBatch.Draw(_infoContainer, new Vector2(1651, 100), Color.White);
+            var textStartPos = _viewport.X - 259;
+            var textStartPosY = 187;
+            var textTopMargin = 16;
+
+            spriteBatch.Draw(_infoContainer, new Vector2(_viewport.X - 269, 100), Color.White);
             var vectorStringFormat = "{0}: x {1}, y {2}";
 
-            _fpsCounter.DrawFps(spriteBatch, _fpsFont, new Vector2(1658f, 107f), Color.LightGray);
-            spriteBatch.DrawString(_fpsFont, "__________________________________________", new Vector2(1661, 167f), Color.LightGray);
-            spriteBatch.DrawString(_fpsFont, string.Format(vectorStringFormat, "Velocity", player.Velocity.X.ToString("0.00"), player.Velocity.Y.ToString("0.00")), new Vector2(1661, 187f), Color.LightGray);
-            spriteBatch.DrawString(_fpsFont, string.Format(vectorStringFormat, "Position", player.Position.X.ToString("0.00"), player.Position.Y.ToString("0.00")), new Vector2(1661, 203), Color.LightGray);
-            spriteBatch.DrawString(_fpsFont, string.Format(vectorStringFormat, "Camera velocity", _camera.Velocity.X.ToString("0.00"), _camera.Velocity.Y.ToString("0.00")), new Vector2(1661, 218f), Color.LightGray);
-            spriteBatch.DrawString(_fpsFont, "State: " + player.CurrentState, new Vector2(1661, 233f), Color.LightGray);
-            spriteBatch.DrawString(_fpsFont, "Direction: " + player.CurrentDirection, new Vector2(1661, 248), Color.LightGray);
+            _fpsCounter.DrawFps(spriteBatch, _fpsFont, new Vector2(_viewport.X - 262, 107f), Color.LightGray);
+            spriteBatch.DrawString(_fpsFont, "__________________________________________", new Vector2(textStartPos, 167f), Color.LightGray);
+            spriteBatch.DrawString(_fpsFont, string.Format(vectorStringFormat, "Velocity", player.Velocity.X.ToString("0.00"), player.Velocity.Y.ToString("0.00")), new Vector2(textStartPos, textStartPosY), Color.LightGray);
+            spriteBatch.DrawString(_fpsFont, string.Format(vectorStringFormat, "Position", player.Position.X.ToString("0.00"), player.Position.Y.ToString("0.00")), new Vector2(textStartPos, textStartPosY + textTopMargin), Color.LightGray);
+            spriteBatch.DrawString(_fpsFont, string.Format(vectorStringFormat, "Camera velocity", _camera.Velocity.X.ToString("0.00"), _camera.Velocity.Y.ToString("0.00")), new Vector2(textStartPos, textStartPosY + (textTopMargin * 2)), Color.LightGray);
+            spriteBatch.DrawString(_fpsFont, "State: " + player.CurrentState, new Vector2(textStartPos, textStartPosY + (textTopMargin * 3)), Color.LightGray);
+            spriteBatch.DrawString(_fpsFont, "Direction: " + player.CurrentDirection, new Vector2(textStartPos, textStartPosY + (textTopMargin * 4)), Color.LightGray);
         }
 
         public void DrawString(SpriteBatch spriteBatch, string text)
@@ -170,7 +180,7 @@
 
             if (_drawPlayerCollision)
             {
-                DrawRectancgle(spriteBatch, _player.Bounds, transparancy: 0.50f);
+                DrawRectancgle(spriteBatch, _player.Bounds, color: Color.Blue, transparancy: 0.50f);
                 DrawRectancgle(spriteBatch, _player.BottomDetectBounds, color: Color.Red, transparancy: 0.50f);
             }
         }
