@@ -9,20 +9,37 @@
     public class AnimationManager
     {
         private readonly Camera2D _camera;
-        private readonly Dictionary<Actor.State, Animation> _animations;
+        private readonly Dictionary<Actor.State, Animation> _actorAnimations;
+        private readonly List<Animation> _animations;
 
-        public AnimationManager(Camera2D camera, Dictionary<Actor.State, Animation> animations)
+        public AnimationManager(Camera2D camera, Dictionary<Actor.State, Animation> actorAnimations)
         {
             _camera = camera;
+            _actorAnimations = actorAnimations;
+        }
+
+        public AnimationManager(Camera2D camera, Dictionary<Actor.State, Animation> actorAnimations, List<Animation> animations)
+        {
+            _camera = camera;
+            _actorAnimations = actorAnimations;
             _animations = animations;
         }
 
         public void Update(GameTime gameTime)
         {
-            var visibleAnimations = _animations.Where(x => _camera.CameraBounds.IntersectsWith(x.Value.Actor.Bounds) && x.Value.FrameCount > 1);
-            var inactiveAnimations = _animations.Where(x => !_camera.CameraBounds.IntersectsWith(x.Value.Actor.Bounds) && x.Value.FrameCount > 1).Select(x => x.Value);
+            var visibleActorAnimations = _actorAnimations.Where(x => _camera.CameraBounds.IntersectsWith(x.Value.Actor.Bounds) && x.Value.FrameCount > 1 && x.Key == x.Value.Actor.CurrentState).Select(x => x.Value);
+            var inactiveActorAnimations = _actorAnimations.Where(x => !_camera.CameraBounds.IntersectsWith(x.Value.Actor.Bounds) && x.Value.FrameCount > 1).Select(x => x.Value);
 
-            foreach (var animation in visibleAnimations.Where(x => x.Key == x.Value.Actor.CurrentState).Select(x => x.Value))
+            var animationsToUpdate = visibleActorAnimations.ToList();
+            var animationsToReset = inactiveActorAnimations.ToList();
+
+            if (_animations?.Any() == true)
+            {
+                animationsToUpdate.AddRange(_animations.Where(x => _camera.CameraBounds.IntersectsWith(x.Bounds) && x.FrameCount > 1));
+                animationsToReset.AddRange(_animations.Where(x => !_camera.CameraBounds.IntersectsWith(x.Bounds) && x.FrameCount > 1));
+            }
+
+            foreach (var animation in animationsToUpdate)
             {
                 animation.IsAnimating = true;
                 animation.Timer += (float)gameTime.ElapsedGameTime.TotalSeconds;
@@ -40,7 +57,7 @@
                 }
             }
 
-            foreach (var animation in inactiveAnimations)
+            foreach (var animation in animationsToReset)
             {
                 animation.Reset();
             }
@@ -48,9 +65,14 @@
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            var visibleAnimations = _animations.Where(x => _camera.CameraBounds.IntersectsWith(x.Value.Actor.Bounds));
+            var visibleAnimations = _actorAnimations.Where(x => _camera.CameraBounds.IntersectsWith(x.Value.Actor.Bounds) && x.Key == x.Value.Actor.CurrentState).Select(x => x.Value).ToList();
 
-            foreach (var animation in visibleAnimations.Where(x => x.Key == x.Value.Actor.CurrentState).Select(x => x.Value))
+            if (_animations?.Any() == true)
+            {
+                visibleAnimations.AddRange(_animations.Where(x => _camera.CameraBounds.IntersectsWith(x.Bounds)));
+            }
+
+            foreach (var animation in visibleAnimations)
             {
                 spriteBatch.Draw(
                     animation.Texture,
@@ -64,7 +86,7 @@
                     rotation: 0,
                     origin: Vector2.Zero,
                     scale: animation.Scale,
-                    animation.Actor.CurrentDirection == Actor.Direction.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None,
+                    animation.Actor?.CurrentDirection == Actor.Direction.Left ? SpriteEffects.FlipHorizontally : SpriteEffects.None,
                     layerDepth: 0);
             }
         }
