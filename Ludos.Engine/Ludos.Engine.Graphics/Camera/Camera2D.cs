@@ -4,6 +4,7 @@
     using Ludos.Engine.Utilities;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
+    using static Ludos.Engine.Graphics.Camera2D.CameraTransition;
     using RectangleF = System.Drawing.RectangleF;
 
     public class Camera2D
@@ -15,31 +16,83 @@
         private Viewport _viewPort;
         private Vector2 _velocity;
         private Vector2 _lastPosition;
+        private Vector2 _movementBoundsSizePct;
+        private CameraTransition _transition;
+        private bool _autoCenteringIsActive = true;
 
         public Camera2D(GraphicsDevice graphicsDevice, LudosPlayer player, float cameraScale)
+        : this(graphicsDevice, player, cameraScale, new Vector2(0.15f, 0.75f))
+        {
+        }
+
+        public Camera2D(GraphicsDevice graphicsDevice, LudosPlayer player, float cameraScale, Vector2 movementBoundsSizePct)
         {
             _viewPort = graphicsDevice.Viewport;
             _cameraBounds = new RectangleF(graphicsDevice.Viewport.Bounds.X, graphicsDevice.Viewport.Bounds.Y, graphicsDevice.Viewport.Bounds.Width, graphicsDevice.Viewport.Bounds.Height);
             _player = player;
             _scale = cameraScale;
-            SetupCameraBounds();
+            _movementBoundsSizePct = movementBoundsSizePct;
+            SetMovementBounds();
         }
 
         public RectangleF CameraBounds { get => _cameraBounds; set => _cameraBounds = value; }
-
+        public float MovementBoundsHeight { get => _movementBounds.Height; set => _movementBounds.Height = value; }
+        public float MovementBoundsWidth { get => _movementBounds.Width; set => _movementBounds.Width = value; }
         public RectangleF MovementBounds { get => _movementBounds; set => _movementBounds = value; }
+        public float? CameraAxisYLock { get; set; } = null;
+        public float? CameraAxisXLock { get; set; } = null;
+        public CameraTransition Transition { get => _transition; set => _transition = value; }
 
         public Vector2 Velocity { get => _velocity; set => _velocity = value; }
-
         public void Update(GameTime gameTime)
         {
+            if (_transition.TransitionInProgress)
+            {
+                _autoCenteringIsActive = false;
+
+                var cameraPos = new Vector2(_cameraBounds.Location.X, _cameraBounds.Location.Y);
+                var newPos = Utilities.MoveTowardsPosition(cameraPos, _transition.TransitionDestination, 3f);
+
+                _cameraBounds.X = newPos.X;
+                _cameraBounds.Y = newPos.Y;
+
+                if (_transition.Type == CameraTransitionType.VerticalSlide)
+                {
+                    _transition.TransitionComplete = (_transition.Direction == 1 && cameraPos.Y >= _transition.TransitionDestination.Y) || (_transition.Direction == -1 && cameraPos.Y <= _transition.TransitionDestination.Y);
+                }
+
+                _transition.TransitionInProgress = !_transition.TransitionComplete;
+                _lastPosition = new Vector2(_cameraBounds.X, _cameraBounds.Y);
+
+                if (_transition.PlayerTransitionDestination.ToPoint() != _player.Position.ToPoint())
+                {
+                    _player.Position = Utilities.MoveTowardsPosition(_player.Position, _transition.PlayerTransitionDestination, 0.5f);
+                }
+
+                return;
+            }
+            else if (_transition.TransitionComplete)
+            {
+                _transition = default;
+                _player.IsActive = true;
+
+                if (CameraAxisYLock != null)
+                {
+                    CameraAxisYLock = _cameraBounds.Y;
+                }
+
+                return;
+            }
+
             if (_player.Bounds.Left < _movementBounds.Left)
             {
                 _movementBounds.X = _player.Bounds.X;
+                _autoCenteringIsActive = true;
             }
             else if (_player.Bounds.Right > _movementBounds.Right)
             {
                 _movementBounds.X = _player.Bounds.Right - _movementBounds.Width;
+                _autoCenteringIsActive = true;
             }
 
             if (_player.Bounds.Top < _movementBounds.Top)
@@ -51,7 +104,7 @@
                 _movementBounds.Y = _player.Bounds.Bottom - _movementBounds.Height;
             }
 
-            if (Vector2.Distance(_movementBounds.Center(), _player.Bounds.Center()) > 0 && _player.Velocity.X == 0)
+            if (Vector2.Distance(_movementBounds.Center(), _player.Bounds.Center()) > 0 && _player.Velocity.X == 0 && _autoCenteringIsActive)
             {
                 var dir = _player.Bounds.Center().X - _movementBounds.Center().X;
                 _movementBounds.X += dir * ((float)gameTime.ElapsedGameTime.TotalSeconds * 2);
@@ -60,7 +113,7 @@
             var cameraWidth = _cameraBounds.Width / _scale;
             var cameraHeight = _cameraBounds.Height / _scale;
             _cameraBounds.X = _movementBounds.Center().X - (cameraWidth / 2f);
-            _cameraBounds.Y = _movementBounds.Center().Y - (cameraHeight / 2f);
+            _cameraBounds.Y = CameraAxisYLock == null ? (_movementBounds.Center().Y - (cameraHeight / 2f)) : (float)CameraAxisYLock;
 
             if (_cameraBounds.X < 0)
             {
@@ -115,18 +168,62 @@
             return _cameraBounds.Contains(cordinates.X, cordinates.Y);
         }
 
-        private void SetupCameraBounds()
+        public bool IsOnScreen(RectangleF rec)
+        {
+            return _cameraBounds.IntersectsWith(rec);
+        }
+
+        public void InitiateCameraTransition(CameraTransitionType transType, Rectangle transitionTriggerBounds)
+        {
+            _player.IsActive = false;
+            _transition = default;
+            _transition.TransitionInProgress = true;
+            _transition.Type = transType;
+
+            if (_transition.Type == CameraTransitionType.VerticalSlide || _transition.Type == CameraTransitionType.HorizontalSlide)
+            {
+                _transition.Direction = _transition.Type == CameraTransitionType.VerticalSlide ? (_player.Velocity.Y > 0 ? 1 : -1) : (_player.Velocity.X > 0 ? 1 : -1);
+            }
+
+            var playerDestination = _player.Velocity.Y < 0 ? new Vector2(_player.Position.X, transitionTriggerBounds.Y - (_player.Bounds.Height + 5)) : new Vector2(_player.Position.X, transitionTriggerBounds.Y + transitionTriggerBounds.Height);
+            _transition.PlayerTransitionDestination = playerDestination;
+
+            switch (transType)
+            {
+                case CameraTransitionType.VerticalSlide:
+                    _transition.TransitionDestination = _player.Velocity.Y < 0
+                        ? new Vector2(_cameraBounds.X, transitionTriggerBounds.Y - (_cameraBounds.Height / _scale))
+                        : new Vector2(_cameraBounds.X, transitionTriggerBounds.Y + transitionTriggerBounds.Height);
+                    break;
+            }
+        }
+
+        public void SetMovementBounds()
         {
             var cameraWidth = _cameraBounds.Width / _scale;
             var cameraHeight = _cameraBounds.Height / _scale;
+            var movementBoundsWidth = cameraWidth * _movementBoundsSizePct.X;
+            var movementBoundsHeight = cameraHeight * _movementBoundsSizePct.Y;
 
-            var cameraCenter = new Vector2(_cameraBounds.Left + (cameraWidth / 2f), _cameraBounds.Top + (cameraHeight / 2f));
-            var cameraCenterVisualized = VisualizeCordinates(cameraCenter);
+            _movementBounds = new RectangleF(_player.Bounds.Center().X - (movementBoundsWidth / 2), _player.Bounds.Center().Y - (movementBoundsHeight / 2), movementBoundsWidth, movementBoundsHeight);
+        }
 
-            var movementBoundsWidth = 75;
-            var movementBoundsHeight = 200;
+        public struct CameraTransition
+        {
+            public bool TransitionInProgress;
+            public bool TransitionComplete;
+            public bool PlayterTransitionInProgress;
+            public Vector2 TransitionDestination;
+            public Vector2 PlayerTransitionDestination;
+            public float Direction;
+            public CameraTransitionType Type;
 
-            _movementBounds = new RectangleF(_player.Bounds.Center().X - (movementBoundsWidth / 2), cameraCenterVisualized.Y - 100, movementBoundsWidth, movementBoundsHeight);
+            public enum CameraTransitionType
+            {
+                VerticalSlide,
+                HorizontalSlide,
+                Blink,
+            }
         }
     }
 }

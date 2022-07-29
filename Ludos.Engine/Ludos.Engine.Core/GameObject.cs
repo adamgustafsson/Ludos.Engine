@@ -35,6 +35,7 @@
             ObjectsAndItems,
         }
 
+        public bool IsActive { get; set; } = true;
         public bool UseDefaultGravity { get; set; } = true;
         public virtual RectangleF Bounds { get => _bounds; }
         public virtual Point Size { set => _bounds.Size = new SizeF(value.X, value.Y); }
@@ -43,9 +44,7 @@
         public virtual float Gravity { get; set; }
         public virtual bool OnGround { get; set; }
         public virtual RectangleF LastPosition { get => _lastPosition; }
-
         public CollisionInformation CollisionInfo { get => _collisionInfo; set => _collisionInfo = value; }
-
         public List<CollisionLayers> CollidingLayers { get; set; } = new List<CollisionLayers>() { CollisionLayers.Ground };
         public List<GameObject> AdditionalCollisionObjects { get; set; } = new List<GameObject>();
 

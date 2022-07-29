@@ -60,6 +60,12 @@
 
         public override void Update(float elapsedTime)
         {
+
+            if (!IsActive)
+            {
+                return;
+            }
+
             var direction = GetDirection();
             Accelerate(ref direction);
             Velocity = CalculateMoveVelocity(Velocity, direction, Speed, elapsedTime);

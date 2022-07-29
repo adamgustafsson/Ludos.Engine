@@ -131,6 +131,7 @@
                 { TMXDefaultLayerInfo.ObjectLayerWater, unassignedIndex },
                 { TMXDefaultLayerInfo.ObjectLayerInteractableObjects, unassignedIndex },
                 { TMXDefaultLayerInfo.ObjectLayerParticles, unassignedIndex },
+                { TMXDefaultLayerInfo.ObjectLayerCamera, unassignedIndex },
                 { TMXDefaultLayerInfo.TileLayerForeground, unassignedIndex },
                 { TMXDefaultLayerInfo.TileLayerWorld, unassignedIndex },
                 { TMXDefaultLayerInfo.TileLayerBackGround, unassignedIndex },

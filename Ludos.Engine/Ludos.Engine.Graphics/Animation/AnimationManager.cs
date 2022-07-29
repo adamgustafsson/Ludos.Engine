@@ -27,7 +27,7 @@
 
         public void Update(GameTime gameTime)
         {
-            var visibleActorAnimations = _actorAnimations.Where(x => _camera.CameraBounds.IntersectsWith(x.Value.Actor.Bounds) && x.Value.FrameCount > 1 && x.Key == x.Value.Actor.CurrentState).Select(x => x.Value);
+            var visibleActorAnimations = _actorAnimations.Where(x => _camera.CameraBounds.IntersectsWith(x.Value.Actor.Bounds) && x.Value.FrameCount > 1 && x.Key == x.Value.Actor.CurrentState && x.Value.Actor.IsActive).Select(x => x.Value);
             var inactiveActorAnimations = _actorAnimations.Where(x => !_camera.CameraBounds.IntersectsWith(x.Value.Actor.Bounds) && x.Value.FrameCount > 1).Select(x => x.Value);
 
             var animationsToUpdate = visibleActorAnimations.ToList();
