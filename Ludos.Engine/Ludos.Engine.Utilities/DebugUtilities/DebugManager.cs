@@ -149,11 +149,12 @@
 
             _fpsCounter.DrawFps(spriteBatch, _fpsFont, new Vector2(_viewport.X - 262, 107f), Color.LightGray);
             spriteBatch.DrawString(_fpsFont, "__________________________________________", new Vector2(textStartPos, 167f), Color.LightGray);
-            spriteBatch.DrawString(_fpsFont, string.Format(vectorStringFormat, "Velocity", player.Velocity.X.ToString("0.00"), player.Velocity.Y.ToString("0.00")), new Vector2(textStartPos, textStartPosY), Color.LightGray);
-            spriteBatch.DrawString(_fpsFont, string.Format(vectorStringFormat, "Position", player.Position.X.ToString("0.00"), player.Position.Y.ToString("0.00")), new Vector2(textStartPos, textStartPosY + textTopMargin), Color.LightGray);
-            spriteBatch.DrawString(_fpsFont, string.Format(vectorStringFormat, "Camera velocity", _camera.Velocity.X.ToString("0.00"), _camera.Velocity.Y.ToString("0.00")), new Vector2(textStartPos, textStartPosY + (textTopMargin * 2)), Color.LightGray);
-            spriteBatch.DrawString(_fpsFont, "State: " + player.CurrentState, new Vector2(textStartPos, textStartPosY + (textTopMargin * 3)), Color.LightGray);
-            spriteBatch.DrawString(_fpsFont, "Direction: " + player.CurrentDirection, new Vector2(textStartPos, textStartPosY + (textTopMargin * 4)), Color.LightGray);
+            spriteBatch.DrawString(_fpsFont, string.Format(vectorStringFormat, "Player velocity", player.Velocity.X.ToString("0.00"), player.Velocity.Y.ToString("0.00")), new Vector2(textStartPos, textStartPosY), Color.LightGray);
+            spriteBatch.DrawString(_fpsFont, string.Format(vectorStringFormat, "Player position", player.Position.X.ToString("0.00"), player.Position.Y.ToString("0.00")), new Vector2(textStartPos, textStartPosY + textTopMargin), Color.LightGray);
+            spriteBatch.DrawString(_fpsFont, string.Format(vectorStringFormat, "Camera position", _camera.CameraBounds.Location.X.ToString("0.00"), _camera.CameraBounds.Location.Y.ToString("0.00")), new Vector2(textStartPos, textStartPosY + (textTopMargin * 2)), Color.LightGray);
+            spriteBatch.DrawString(_fpsFont, string.Format(vectorStringFormat, "Camera velocity", _camera.Velocity.X.ToString("0.00"), _camera.Velocity.Y.ToString("0.00")), new Vector2(textStartPos, textStartPosY + (textTopMargin * 3)), Color.LightGray);
+            spriteBatch.DrawString(_fpsFont, "State: " + player.CurrentState, new Vector2(textStartPos, textStartPosY + (textTopMargin * 4)), Color.LightGray);
+            spriteBatch.DrawString(_fpsFont, "Direction: " + player.CurrentDirection, new Vector2(textStartPos, textStartPosY + (textTopMargin * 5)), Color.LightGray);
         }
 
         public void DrawString(SpriteBatch spriteBatch, string text)
@@ -171,6 +172,8 @@
             if (_drawCollision)
             {
                 _levelManager.DrawObjectLayer(spriteBatch, TMXDefaultLayerInfo.ObjectLayerWorld, _camera.CameraBounds.Round(), 0f);
+                _levelManager.DrawObjectLayer(spriteBatch, TMXDefaultLayerInfo.ObjectLayerCamera, _camera.CameraBounds.Round(), 0f);
+                _levelManager.DrawObjectLayer(spriteBatch, TMXDefaultLayerInfo.ObjectLayerInteractableObjects, _camera.CameraBounds.Round(), 0f);
 
                 foreach (var platform in _levelManager.MovingPlatforms)
                 {
