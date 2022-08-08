@@ -1,6 +1,7 @@
 ﻿namespace Ludos.Engine.Actors
 {
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Linq;
     using FuncWorks.XNA.XTiled;
     using Ludos.Engine.Input;
@@ -13,6 +14,7 @@
     public class LudosPlayer : Actor
     {
         private const float INITIALACCELERATION = 0.001f;
+        private const float DEFAULTDECELERATIONSPEED = 4f;
 
         private LevelManager _levelManager;
         private InputManager _inputManager;
@@ -25,10 +27,13 @@
 
         private bool _ladderIsAvailable;
         private bool _onTopOfLadder;
-        private MapObject _mostRecentLadder;
         private bool _onMovingPlatform;
+        private MapObject _mostRecentLadder;
 
         private float _currentAcceleration = INITIALACCELERATION;
+        private bool _decelerate;
+        private float _decelerateSpeed = DEFAULTDECELERATIONSPEED;
+
 
         public LudosPlayer(Vector2 position, Point size, GameServiceContainer services)
             : this(position, size, services.GetService<LevelManager>(), services.GetService<InputManager>())
@@ -52,6 +57,8 @@
         }
 
         public float HorizontalAcceleration { get; set; } = 0.15f;
+
+        public bool DecelerationIsActive { get; set; } = true;
 
         public void ResetToStartPosition()
         {
@@ -297,6 +304,32 @@
                 if (OnGround && newVelocity.Y > 0)
                 {
                     newVelocity.Y = 0;
+                }
+            }
+
+            // Decelaration - room for improvement
+            if (DecelerationIsActive)
+            {
+                var stoppedWalking = newVelocity.X == 0 && linearVelocity.X != 0;
+
+                if (stoppedWalking)
+                {
+                    _decelerate = true;
+                }
+
+                if (_decelerate && direction.X == 0)
+                {
+                    var dirRight = linearVelocity.X > 0;
+                    var dirLeft = linearVelocity.X < 0;
+
+                    newVelocity.X = dirRight ? linearVelocity.X -= _decelerateSpeed : linearVelocity.X += _decelerateSpeed;
+
+                    if ((dirRight && newVelocity.X <= 0) || (dirLeft && newVelocity.X >= 0))
+                    {
+                        _decelerate = false;
+                        _decelerateSpeed = DEFAULTDECELERATIONSPEED;
+                        newVelocity.X = 0;
+                    }
                 }
             }
 
