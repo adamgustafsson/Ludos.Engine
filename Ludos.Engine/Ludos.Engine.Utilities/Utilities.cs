@@ -23,5 +23,12 @@
             r.SetData(data);
             return r;
         }
+
+        public static Vector2 MoveTowardsPosition(Vector2 currentPos, Vector2 targetPos, float speed)
+        {
+            Vector2 dir = targetPos - currentPos;
+            dir.Normalize();
+            return currentPos += dir * speed;
+        }
     }
 }

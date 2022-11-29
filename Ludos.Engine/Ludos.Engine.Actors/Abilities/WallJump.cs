@@ -3,7 +3,7 @@
     using System.Diagnostics;
     using Microsoft.Xna.Framework;
 
-    internal class WallJump : IAbility
+    public class WallJump : IAbility
     {
         public WallJump()
         {

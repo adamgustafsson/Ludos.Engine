@@ -110,6 +110,11 @@
 
         public void DrawObjectLayer(SpriteBatch spriteBatch, string layerName, Rectangle region, float layerDepth)
         {
+            if (_layerIndexInfo[layerName] == -1)
+            {
+                throw new Exception("Objectlayer: '" + layerName + "' does not exist.");
+            }
+
             _currentMap.DrawObjectLayer(spriteBatch, _layerIndexInfo[layerName], region, layerDepth);
         }
 
