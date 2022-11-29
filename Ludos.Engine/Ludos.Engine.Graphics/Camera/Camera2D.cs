@@ -104,7 +104,7 @@
                 _movementBounds.Y = _player.Bounds.Bottom - _movementBounds.Height;
             }
 
-            if (Vector2.Distance(_movementBounds.Center(), _player.Bounds.Center()) > 0 && _player.Velocity.X == 0 && _autoCenteringIsActive)
+            if (Vector2.Distance(_movementBounds.Center(), _player.Bounds.Center()) > 0 && (_player.Velocity.X == 0 || _player.IsDecelerating) && _autoCenteringIsActive)
             {
                 var dir = _player.Bounds.Center().X - _movementBounds.Center().X;
                 _movementBounds.X += dir * ((float)gameTime.ElapsedGameTime.TotalSeconds * 2);
@@ -185,7 +185,7 @@
                 _transition.Direction = _transition.Type == CameraTransitionType.VerticalSlide ? (_player.Velocity.Y > 0 ? 1 : -1) : (_player.Velocity.X > 0 ? 1 : -1);
             }
 
-            var playerDestination = _player.Velocity.Y < 0 ? new Vector2(_player.Position.X, transitionTriggerBounds.Y - (_player.Bounds.Height + 5)) : new Vector2(_player.Position.X, transitionTriggerBounds.Y + transitionTriggerBounds.Height);
+            var playerDestination = _player.Velocity.Y < 0 ? new Vector2(_player.Position.X, transitionTriggerBounds.Y - (_player.Bounds.Height + 10)) : new Vector2(_player.Position.X, transitionTriggerBounds.Y + transitionTriggerBounds.Height);
             _transition.PlayerTransitionDestination = playerDestination;
 
             switch (transType)

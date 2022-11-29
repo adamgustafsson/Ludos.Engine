@@ -31,9 +31,7 @@
         private MapObject _mostRecentLadder;
 
         private float _currentAcceleration = INITIALACCELERATION;
-        private bool _decelerate;
         private float _decelerateSpeed = DEFAULTDECELERATIONSPEED;
-
 
         public LudosPlayer(Vector2 position, Point size, GameServiceContainer services)
             : this(position, size, services.GetService<LevelManager>(), services.GetService<InputManager>())
@@ -59,6 +57,7 @@
         public float HorizontalAcceleration { get; set; } = 0.15f;
 
         public bool DecelerationIsActive { get; set; } = true;
+        public bool IsDecelerating { get; set; }
 
         public void ResetToStartPosition()
         {
@@ -75,7 +74,9 @@
 
             var direction = GetDirection();
             Accelerate(ref direction);
+            var prevVelocity = Velocity;
             Velocity = CalculateMoveVelocity(Velocity, direction, Speed, elapsedTime);
+            Decelirate(prevVelocity, direction);
 
             AdjustVelocityOnPreviousCollision();
 
@@ -269,9 +270,9 @@
             }
         }
 
-        private Vector2 CalculateMoveVelocity(Vector2 linearVelocity, Vector2 direction, Vector2 speed, float elapsedTime)
+        private Vector2 CalculateMoveVelocity(Vector2 currentVelocity, Vector2 direction, Vector2 speed, float elapsedTime)
         {
-            var newVelocity = linearVelocity;
+            var newVelocity = currentVelocity;
 
             var jumpCanceled = newVelocity.Y < 0 && !_jumpButtonPressedDown && !(GetAbility<WallJump>()?.IsWallJumping ?? false);
             var gravity = jumpCanceled ? Gravity * 3 : Gravity;
@@ -304,32 +305,6 @@
                 if (OnGround && newVelocity.Y > 0)
                 {
                     newVelocity.Y = 0;
-                }
-            }
-
-            // Decelaration - room for improvement
-            if (DecelerationIsActive)
-            {
-                var stoppedWalking = newVelocity.X == 0 && linearVelocity.X != 0;
-
-                if (stoppedWalking)
-                {
-                    _decelerate = true;
-                }
-
-                if (_decelerate && direction.X == 0)
-                {
-                    var dirRight = linearVelocity.X > 0;
-                    var dirLeft = linearVelocity.X < 0;
-
-                    newVelocity.X = dirRight ? linearVelocity.X -= _decelerateSpeed : linearVelocity.X += _decelerateSpeed;
-
-                    if ((dirRight && newVelocity.X <= 0) || (dirLeft && newVelocity.X >= 0))
-                    {
-                        _decelerate = false;
-                        _decelerateSpeed = DEFAULTDECELERATIONSPEED;
-                        newVelocity.X = 0;
-                    }
                 }
             }
 
@@ -407,5 +382,33 @@
                 _currentAcceleration = INITIALACCELERATION;
             }
         }
+
+        private void Decelirate(Vector2 prevVelocity, Vector2 direction)
+        {
+            // Decelaration - room for improvement
+            if (DecelerationIsActive)
+            {
+                IsDecelerating = direction.X == 0 && prevVelocity.X != 0;
+
+                if (IsDecelerating)
+                {
+                    var dirRight = prevVelocity.X > 0;
+                    var dirLeft = prevVelocity.X < 0;
+                    var newVelocity = Velocity;
+
+                    newVelocity.X = dirRight ? prevVelocity.X -= _decelerateSpeed : prevVelocity.X += _decelerateSpeed;
+
+                    if ((dirRight && newVelocity.X <= 0) || (dirLeft && newVelocity.X >= 0))
+                    {
+                        IsDecelerating = false;
+                        _decelerateSpeed = DEFAULTDECELERATIONSPEED;
+                        newVelocity.X = 0;
+                    }
+
+                    Velocity = newVelocity;
+                }
+            }
+        }
+
     }
 }
