@@ -4,6 +4,7 @@
     using System.Diagnostics;
     using System.Linq;
     using FuncWorks.XNA.XTiled;
+    using Ludos.Engine.Core;
     using Ludos.Engine.Input;
     using Ludos.Engine.Level;
     using Ludos.Engine.Utilities;
@@ -14,7 +15,7 @@
     public class LudosPlayer : Actor
     {
         private const float INITIALACCELERATION = 0.001f;
-        private const float DEFAULTDECELERATIONSPEED = 4f;
+        private const float DEFAULTDECELERATIONSPEED = 4.5f;
 
         private LevelManager _levelManager;
         private InputManager _inputManager;
@@ -33,6 +34,9 @@
         private float _currentAcceleration = INITIALACCELERATION;
         private float _decelerateSpeed = DEFAULTDECELERATIONSPEED;
 
+        private GameObject _currentGrabbableObject;
+        private bool _isCarryingAnObject;
+
         public LudosPlayer(Vector2 position, Point size, GameServiceContainer services)
             : this(position, size, services.GetService<LevelManager>(), services.GetService<InputManager>())
         {
@@ -50,12 +54,9 @@
             _levelManager = levelManager;
             _inputManager = inputManager;
             _startPositon = position;
-
-            Abilities.AddRange(new List<IAbility>() { new WallJump(), new DoubleJump(), new Swimming(Gravity, Speed, Swimming.DivingBehavior.DiveOnButtonPress) });
         }
 
         public float HorizontalAcceleration { get; set; } = 0.15f;
-
         public bool DecelerationIsActive { get; set; } = true;
         public bool IsDecelerating { get; set; }
 
@@ -100,7 +101,42 @@
                 }
             }
 
+            if (_currentGrabbableObject != null && _isCarryingAnObject)
+            {
+                _currentGrabbableObject.Velocity = new Vector2(_currentGrabbableObject.Velocity.X,  0);
+                _currentGrabbableObject.Position = CurrentDirection == Direction.Left ? this.Position + new Vector2(7, -2) : this.Position + new Vector2(-7, -2);
+
+                GetAbility<GrabObject>().ThrowDelay -= elapsedTime;
+
+                if (_inputManager.IsInputDown(InputName.ActionButton1) && GetAbility<GrabObject>().ThrowDelay <= 0)
+                {
+                    GetAbility<GrabObject>().ThrowDelay = 0.5f;
+                    _currentGrabbableObject.Velocity = GetAbility<GrabObject>().GetThrowVelocity(this);
+                    _currentGrabbableObject = null;
+                    _isCarryingAnObject = false;
+                }
+            }
+
             _prevVelocity = Velocity;
+        }
+
+        public override void OnGameObjectCollision(object sender, System.EventArgs e)
+        {
+
+            var collisionObject = sender as GameObject;
+
+            if (collisionObject?.IsGrabbable == true)
+            {
+
+                if (_inputManager.IsInputDown(InputName.ActionButton2) && !_isCarryingAnObject)
+                {
+                    _isCarryingAnObject = true;
+                    _currentGrabbableObject = collisionObject;
+                }
+
+            }
+
+            base.OnGameObjectCollision(sender, e);
         }
 
         private void AdjustVelocityOnPreviousCollision()

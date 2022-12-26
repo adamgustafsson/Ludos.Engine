@@ -173,7 +173,7 @@
             {
                 _levelManager.DrawObjectLayer(spriteBatch, TMXDefaultLayerInfo.ObjectLayerWorld, _camera.CameraBounds.Round(), 0f);
                 _levelManager.DrawObjectLayer(spriteBatch, TMXDefaultLayerInfo.ObjectLayerCamera, _camera.CameraBounds.Round(), 0f);
-                _levelManager.DrawObjectLayer(spriteBatch, TMXDefaultLayerInfo.ObjectLayerInteractableObjects, _camera.CameraBounds.Round(), 0f);
+                //_levelManager.DrawObjectLayer(spriteBatch, TMXDefaultLayerInfo.ObjectLayerInteractableObjects, _camera.CameraBounds.Round(), 0f);
 
                 foreach (var platform in _levelManager.MovingPlatforms)
                 {

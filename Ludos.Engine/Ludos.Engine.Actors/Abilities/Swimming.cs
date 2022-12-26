@@ -6,7 +6,7 @@
     using Ludos.Engine.Utilities;
     using Microsoft.Xna.Framework;
 
-    internal class Swimming : IAbility
+    public class Swimming : IAbility
     {
         public Swimming(float defaultActorGravity, Vector2 defaultActorSpeed, DivingBehavior divingBehavior = DivingBehavior.DiveOnButtonPress)
         {

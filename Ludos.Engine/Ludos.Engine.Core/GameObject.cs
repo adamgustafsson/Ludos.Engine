@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using Ludos.Engine.Actors;
     using Ludos.Engine.Level;
     using Ludos.Engine.Utilities;
     using Microsoft.Xna.Framework;
@@ -26,7 +27,11 @@
 
             _collisionInfo = default;
             _levelManager = levelManager;
+
+            OnCollision += OnGameObjectCollision;
         }
+
+        public event EventHandler OnCollision;
 
         public enum CollisionLayers
         {
@@ -36,6 +41,10 @@
         }
 
         public bool IsActive { get; set; } = true;
+        public bool IsGrabbable { get; set; } = false;
+        public bool IsThrowable { get; set; } = false;
+        public bool IsBounceable { get; set; } = false;
+        public bool IsStationary { get; set; } = false;
         public bool UseDefaultGravity { get; set; } = true;
         public virtual RectangleF Bounds { get => _bounds; }
         public virtual Point Size { set => _bounds.Size = new SizeF(value.X, value.Y); }
@@ -65,6 +74,25 @@
             _bounds.Y = currentPosition.Y;
 
             CalculateTileCollision();
+
+            if (IsStationary && _velocity.X != 0)
+            {
+                if (_velocity.X > 0)
+                {
+                    _velocity.X -= elapsedTime * 200;
+                    _velocity.X = _velocity.X < 0 ? 0 : _velocity.X;
+                }
+                else
+                {
+                    _velocity.X += elapsedTime * 200;
+                    _velocity.X = _velocity.X > 0 ? 0 : _velocity.X;
+                }
+
+                if (_collisionInfo.IsRightCollision && _velocity.X > 0)
+                {
+                    _velocity.X = -_velocity.X;
+                }
+            }
         }
 
         public virtual void CalculateTileCollision()
@@ -86,7 +114,16 @@
 
                 if (_collisionInfo.IsGroundCollision && !OnGround)
                 {
-                     SetGrounded(new PointF(_lastPosition.X, collisionRect.Top - _bounds.Height));
+                    if (IsBounceable && _velocity.Y > 45)
+                    {
+                        _bounds.Location = new PointF(_lastPosition.X, collisionRect.Top - _bounds.Height);
+                        OnGround = true;
+                        _velocity.Y *= -0.5f;
+                    }
+                    else
+                    {
+                        SetGrounded(new PointF(_lastPosition.X, collisionRect.Top - _bounds.Height));
+                    }
                 }
                 else if (_collisionInfo.IsRoofCollision)
                 {
@@ -96,13 +133,28 @@
                 else if (_collisionInfo.IsRightCollision)
                 {
                     _bounds.X = collisionRect.Left - _bounds.Width;
-                    ResetVelocity();
+
+                    if (IsBounceable)
+                    {
+                        HorizontalBounce();
+                    }
+                    else
+                    {
+                        ResetVelocity();
+                    }
                 }
                 else if (_collisionInfo.IsLeftCollision)
                 {
                     _bounds.X = collisionRect.Right;
-                    _velocity.X = 0;
-                    ResetVelocity();
+
+                    if (IsBounceable)
+                    {
+                        HorizontalBounce();
+                    }
+                    else
+                    {
+                        ResetVelocity();
+                    }
                 }
             }
 
@@ -146,6 +198,27 @@
         public void ResetVelocity()
         {
             _velocity.X = 0f;
+        }
+
+        public void HorizontalBounce()
+        {
+            var currentVelocity = _velocity;
+            _velocity.X = _velocity.X > 0 ? (_velocity.X * -0.85f) : Math.Abs(_velocity.X * 0.85f);
+        }
+
+        public void VericalBounce()
+        {
+            _velocity.Y = _velocity.Y * -0.5f;
+        }
+
+        public void InvokeCollision(GameObject gameObject)
+        {
+            OnCollision?.Invoke(gameObject, new EventArgs());
+        }
+
+        public virtual void OnGameObjectCollision(object sender, EventArgs e)
+        {
+            var collisionObject = sender as GameObject;
         }
 
         public struct CollisionInformation

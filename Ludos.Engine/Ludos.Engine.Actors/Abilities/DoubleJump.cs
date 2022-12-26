@@ -1,6 +1,6 @@
 ﻿namespace Ludos.Engine.Actors
 {
-    internal class DoubleJump : IAbility
+    public class DoubleJump : IAbility
     {
         private bool _abilityTemporarilyDisabled;
 
