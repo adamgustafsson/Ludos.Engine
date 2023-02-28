@@ -107,6 +107,5 @@
 
             // add this event handler back
             Window.ClientSizeChanged += OnResize;
-        }
-    }
+        }    }
 }

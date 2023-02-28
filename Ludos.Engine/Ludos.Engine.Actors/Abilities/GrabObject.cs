@@ -1,7 +1,7 @@
-﻿using Microsoft.Xna.Framework;
-
-namespace Ludos.Engine.Actors
+﻿namespace Ludos.Engine.Actors
 {
+    using Microsoft.Xna.Framework;
+
     public class GrabObject : IAbility
     {
         public GrabObject()
@@ -21,6 +21,7 @@ namespace Ludos.Engine.Actors
         public void ResetAbility()
         {
         }
+
         public Vector2 GetThrowVelocity(Actor actor)
         {
             return new Vector2(actor.CurrentDirection == Actor.Direction.Left ? actor.Velocity.X - ThrowVelocity.X : actor.Velocity.X + ThrowVelocity.X, ThrowVelocity.Y);

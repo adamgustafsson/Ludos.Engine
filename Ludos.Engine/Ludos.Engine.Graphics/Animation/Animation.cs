@@ -48,7 +48,7 @@
         }
 
         public Actor Actor { get; }
-        public GameObject GameObject{ get; }
+        public GameObject GameObject { get; }
         public RectangleF Bounds
         {
             get { return GameObject == null ? new RectangleF(Position.X, Position.Y, FrameWidth, FrameHeight) : GameObject.Bounds; }

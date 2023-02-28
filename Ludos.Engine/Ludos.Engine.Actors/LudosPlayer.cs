@@ -67,7 +67,6 @@
 
         public override void Update(float elapsedTime)
         {
-
             if (!IsActive)
             {
                 return;
@@ -122,18 +121,15 @@
 
         public override void OnGameObjectCollision(object sender, System.EventArgs e)
         {
-
             var collisionObject = sender as GameObject;
 
             if (collisionObject?.IsGrabbable == true)
             {
-
                 if (_inputManager.IsInputDown(InputName.ActionButton2) && !_isCarryingAnObject)
                 {
                     _isCarryingAnObject = true;
                     _currentGrabbableObject = collisionObject;
                 }
-
             }
 
             base.OnGameObjectCollision(sender, e);
@@ -445,6 +441,5 @@
                 }
             }
         }
-
     }
 }
