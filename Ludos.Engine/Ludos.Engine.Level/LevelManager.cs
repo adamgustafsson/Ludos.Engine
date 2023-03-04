@@ -3,33 +3,36 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Security.Cryptography;
     using FuncWorks.XNA.XTiled;
+    using Ludos.Engine.Actors;
+    using Ludos.Engine.Core;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Content;
     using Microsoft.Xna.Framework.Graphics;
     using RectangleF = System.Drawing.RectangleF;
 
-    public class LevelManager
+    public static class LevelManager
     {
-        private readonly List<Map> _maps;
-        private readonly List<TMXMapInfo> _mapsInfo;
-        private int _currentLevelIndex;
-        private Dictionary<string, int> _layerIndexInfo;
-        private Map _currentMap;
+        private static List<Map> _maps;
+        private static List<TMXMapInfo> _mapsInfo;
+        private static int _currentLevelIndex;
+        private static Dictionary<string, int> _layerIndexInfo;
+        private static Map _currentMap;
 
-        public LevelManager(ContentManager content, List<TMXMapInfo> mapsInfo)
+        public static string CurrentMapName { get => System.IO.Path.GetFileName(_mapsInfo[_currentLevelIndex].TmxFilePath).Replace(".tmx", string.Empty); }
+        public static List<MovingPlatform> MovingPlatforms { get; private set; }
+        public static List<GameObject> GlobalGameObjects { get; set; } = new();
+
+        public static void Init(ContentManager content, List<TMXMapInfo> mapsInfo)
         {
             _maps = new List<Map>();
             _mapsInfo = mapsInfo;
-
             LoadTmxFiles(content);
             LoadMap(tmxMapIndex: 0);
         }
 
-        public string CurrentMapName { get => System.IO.Path.GetFileName(_mapsInfo[_currentLevelIndex].TmxFilePath).Replace(".tmx", string.Empty); }
-        public List<MovingPlatform> MovingPlatforms { get; private set; }
-
-        public void LoadMap(int tmxMapIndex)
+        public static void LoadMap(int tmxMapIndex)
         {
             _currentLevelIndex = tmxMapIndex;
             _currentMap = _maps[_currentLevelIndex];
@@ -39,7 +42,7 @@
             LoadMovingPlatforms();
         }
 
-        public void LoadMap(string tmxMapName)
+        public static void LoadMap(string tmxMapName)
         {
             var map = _mapsInfo.Where(x => x.TmxFilePath.ToLower().Contains(tmxMapName.ToLower())).FirstOrDefault();
 
@@ -51,51 +54,66 @@
             LoadMap(_mapsInfo.IndexOf(map));
         }
 
-        public void Update(GameTime gameTime)
+        public static void Update(float elapsedTime)
         {
             foreach (var movingPlatform in MovingPlatforms)
             {
-                movingPlatform.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
+                movingPlatform.Update(elapsedTime);
+            }
+
+            foreach (var globalObject in GlobalGameObjects)
+            {
+                if (globalObject is Actor)
+                {
+                    foreach (var otherObject in GlobalGameObjects.Where(x => x.Id != globalObject.Id && x.CollidingLayers.Contains(GameObject.CollisionLayers.Actors) && x.Bounds.IntersectsWith(globalObject.Bounds)))
+                    {
+                        globalObject.InvokeCollision(otherObject);
+                    }
+                }
+                else
+                {
+                    globalObject.Update(elapsedTime);
+                }
             }
         }
 
-        public int GetLayerIndex(string layerName)
+        public static int GetLayerIndex(string layerName)
         {
             return _layerIndexInfo[layerName];
         }
 
-        public Rectangle GetCurrentMapBounds()
+        public static Rectangle GetCurrentMapBounds()
         {
             return _currentMap.Bounds;
         }
 
-        public IEnumerable<MapObject> GetObjectsInRegion(string layerName, RectangleF region)
+        public static IEnumerable<MapObject> GetObjectsInRegion(string layerName, RectangleF region)
         {
             return _currentMap.GetObjectsInRegion(_layerIndexInfo[layerName], region);
         }
 
-        public IEnumerable<MapObject> GetObjectsInRegion(string layerName, RectangleF region, KeyValuePair<string, string> property)
+        public static IEnumerable<MapObject> GetObjectsInRegion(string layerName, RectangleF region, KeyValuePair<string, string> property)
         {
             var objectsInRegion = _currentMap.GetObjectsInRegion(_layerIndexInfo[layerName], region);
             return objectsInRegion.Any() ? objectsInRegion.Where(x => x.Properties.ContainsKey(property.Key) && x.Properties[property.Key].Value == property.Value) : new List<MapObject>();
         }
 
-        public IEnumerable<MapObject> GetObjectsInRegion(string layerName, Rectangle region)
+        public static IEnumerable<MapObject> GetObjectsInRegion(string layerName, Rectangle region)
         {
             return _currentMap.GetObjectsInRegion(_layerIndexInfo[layerName], region);
         }
 
-        public IEnumerable<MapObject> GetObjectsInRegion(string layerName, Rectangle region, string type)
+        public static IEnumerable<MapObject> GetObjectsInRegion(string layerName, Rectangle region, string type)
         {
             return _currentMap.GetObjectsInRegion(_layerIndexInfo[layerName], region).Where(x => x.Type.ToLower().Equals(type.ToLower()));
         }
 
-        public IEnumerable<MapObject> GetAllLayerObjects(string layer)
+        public static IEnumerable<MapObject> GetAllLayerObjects(string layer)
         {
             return _currentMap.ObjectLayers[layer].MapObjects;
         }
 
-        public void DrawTileLayers(SpriteBatch spriteBatch, RectangleF region, float layerDepth)
+        public static void DrawTileLayers(SpriteBatch spriteBatch, RectangleF region, float layerDepth)
         {
             for (int i = 0; i < _maps[_currentLevelIndex].TileLayers.Count; i++)
             {
@@ -103,12 +121,12 @@
             }
         }
 
-        public void DrawTileLayer(SpriteBatch spriteBatch, string layerName, RectangleF region, float layerDepth)
+        public static void DrawTileLayer(SpriteBatch spriteBatch, string layerName, RectangleF region, float layerDepth)
         {
             _currentMap.DrawLayer(spriteBatch, _layerIndexInfo[layerName], region, layerDepth);
         }
 
-        public void DrawObjectLayer(SpriteBatch spriteBatch, string layerName, Rectangle region, float layerDepth)
+        public static void DrawObjectLayer(SpriteBatch spriteBatch, string layerName, Rectangle region, float layerDepth)
         {
             if (_layerIndexInfo[layerName] == -1)
             {
@@ -118,7 +136,7 @@
             _currentMap.DrawObjectLayer(spriteBatch, _layerIndexInfo[layerName], region, layerDepth);
         }
 
-        private void LoadTmxFiles(ContentManager content)
+        private static void LoadTmxFiles(ContentManager content)
         {
             foreach (var info in _mapsInfo)
             {
@@ -126,7 +144,7 @@
             }
         }
 
-        private void PopulateLayerNames()
+        private static void PopulateLayerNames()
         {
             var unassignedIndex = -1;
 
@@ -151,7 +169,7 @@
             }
         }
 
-        private void AssignTileLayerIdexes()
+        private static void AssignTileLayerIdexes()
         {
             for (int i = 0; i < _maps[_currentLevelIndex].TileLayers.Count; i++)
             {
@@ -164,7 +182,7 @@
             }
         }
 
-        private void AssignObjectLayerIdexes()
+        private static void AssignObjectLayerIdexes()
         {
             for (int i = 0; i < _maps[_currentLevelIndex].ObjectLayers.Count; i++)
             {
@@ -182,7 +200,7 @@
             }
         }
 
-        private void LoadMovingPlatforms()
+        private static void LoadMovingPlatforms()
         {
             MovingPlatforms = new List<MovingPlatform>();
 

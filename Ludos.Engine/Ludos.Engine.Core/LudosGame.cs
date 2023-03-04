@@ -12,8 +12,6 @@
         private RenderTarget2D _offScreenRenderTarget;
         private float _aspectRatio;
         private Point _oldWindowSize;
-        private LevelManager _levelManager;
-        private InputManager _inputManager;
 
         public LudosGame()
         {
@@ -36,14 +34,9 @@
 
         protected void InitializeGameServices(List<TMXMapInfo> tmxMapsInfo, Dictionary<string, Input> userControls)
         {
-            _levelManager = new LevelManager(Content, tmxMapsInfo);
-            _inputManager = new InputManager(new System.Drawing.Size(Graphics.PreferredBackBufferWidth, Graphics.PreferredBackBufferHeight))
-            {
-                UserControls = userControls,
-            };
-
-            Services.AddService(_levelManager);
-            Services.AddService(_inputManager);
+            LevelManager.Init(Content, tmxMapsInfo);
+            InputManager.Init(new System.Drawing.Size(Graphics.PreferredBackBufferWidth, Graphics.PreferredBackBufferHeight));
+            InputManager.UserControls = userControls;
             Services.AddService(Content);
         }
 
@@ -51,10 +44,10 @@
         {
             if (!GameIsPaused)
             {
-                _levelManager.Update(gameTime);
+                LevelManager.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
             }
 
-            _inputManager.Update(Window.ClientBounds);
+            InputManager.Update(Window.ClientBounds);
             base.Update(gameTime);
         }
 
@@ -79,6 +72,12 @@
             SpriteBatch.Draw(_offScreenRenderTarget, GraphicsDevice.Viewport.Bounds, Color.White);
             SpriteBatch.End();
             base.EndDraw();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            _offScreenRenderTarget.Dispose();
+            base.Dispose(disposing);
         }
 
         private void OnResize(object sender, EventArgs e)

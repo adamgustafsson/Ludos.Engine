@@ -9,8 +9,8 @@
     {
         private readonly GraphicsDevice _graphicsDevice;
 
-        public ProceduralButton(GraphicsDevice graphicsDevice, SpriteFont font, InputManager inputManager, Rectangle area)
-            : base(font, inputManager)
+        public ProceduralButton(GraphicsDevice graphicsDevice, SpriteFont font, Rectangle area)
+            : base(font)
         {
             _graphicsDevice = graphicsDevice;
             Rectangle = area;

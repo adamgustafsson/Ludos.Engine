@@ -15,9 +15,7 @@
         private readonly FpsCounter _fpsCounter;
         private readonly SpriteFont _fpsFont;
         private readonly GraphicsDevice _graphicsDevice;
-        private readonly InputManager _inputManager;
         private readonly Camera2D _camera;
-        private readonly LevelManager _levelManager;
         private readonly LudosPlayer _player;
         private readonly Point _viewport;
 
@@ -35,8 +33,6 @@
             _fpsCounter = new FpsCounter();
             _fpsFont = debugTextFont;
             _graphicsDevice = services.GetService<ContentManager>().GetGraphicsDevice();
-            _inputManager = services.GetService<InputManager>();
-            _levelManager = services.GetService<LevelManager>();
             _camera = camera;
             _player = player;
             _viewport = new Point(_graphicsDevice.Viewport.Width, _graphicsDevice.Viewport.Height);
@@ -102,22 +98,22 @@
             spriteBatch.DrawString(_fpsFont, "Show debug info", new Vector2(textStartPosX, textStartPosY + (textTopMargin * 2)), Color.LightGray);
             spriteBatch.DrawString(_fpsFont, "Show player collision", new Vector2(textStartPosX, textStartPosY + (textTopMargin * 3)), Color.LightGray);
 
-            if (_inputManager.LeftClicked(_checkBoxes[0].Rectangle))
+            if (InputManager.LeftClicked(_checkBoxes[0].Rectangle))
             {
                 _drawCollision = !_drawCollision;
             }
 
-            if (_inputManager.LeftClicked(_checkBoxes[1].Rectangle))
+            if (InputManager.LeftClicked(_checkBoxes[1].Rectangle))
             {
                 _drawCameraMovementBounds = !_drawCameraMovementBounds;
             }
 
-            if (_inputManager.LeftClicked(_checkBoxes[2].Rectangle))
+            if (InputManager.LeftClicked(_checkBoxes[2].Rectangle))
             {
                 _drawDebugInfo = !_drawDebugInfo;
             }
 
-            if (_inputManager.LeftClicked(_checkBoxes[3].Rectangle))
+            if (InputManager.LeftClicked(_checkBoxes[3].Rectangle))
             {
                 _drawPlayerCollision = !_drawPlayerCollision;
             }
@@ -171,11 +167,11 @@
 
             if (_drawCollision)
             {
-                _levelManager.DrawObjectLayer(spriteBatch, TMXDefaultLayerInfo.ObjectLayerWorld, _camera.CameraBounds.Round(), 0f);
-                _levelManager.DrawObjectLayer(spriteBatch, TMXDefaultLayerInfo.ObjectLayerCamera, _camera.CameraBounds.Round(), 0f);
-                //_levelManager.DrawObjectLayer(spriteBatch, TMXDefaultLayerInfo.ObjectLayerInteractableObjects, _camera.CameraBounds.Round(), 0f);
+                LevelManager.DrawObjectLayer(spriteBatch, TMXDefaultLayerInfo.ObjectLayerWorld, _camera.CameraBounds.Round(), 0f);
+                LevelManager.DrawObjectLayer(spriteBatch, TMXDefaultLayerInfo.ObjectLayerCamera, _camera.CameraBounds.Round(), 0f);
+                //LevelManager.DrawObjectLayer(spriteBatch, TMXDefaultLayerInfo.ObjectLayerInteractableObjects, _camera.CameraBounds.Round(), 0f);
 
-                foreach (var platform in _levelManager.MovingPlatforms)
+                foreach (var platform in LevelManager.MovingPlatforms)
                 {
                     DrawRectancgle(spriteBatch, platform.DetectionBounds, color: Color.Green);
                 }

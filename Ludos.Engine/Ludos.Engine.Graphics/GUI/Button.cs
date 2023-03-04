@@ -9,13 +9,13 @@
     {
         private readonly Texture2D[] _textures;
 
-        public Button(Texture2D texture, SpriteFont font, InputManager inputManager)
-        : this(new Texture2D[] { texture }, font, inputManager)
+        public Button(Texture2D texture, SpriteFont font)
+        : this(new Texture2D[] { texture }, font)
         {
         }
 
-        public Button(Texture2D[] textures, SpriteFont font, InputManager inputManager)
-             : base(font, inputManager)
+        public Button(Texture2D[] textures, SpriteFont font)
+             : base(font)
         {
             _textures = textures;
             TextColor = Color.White;

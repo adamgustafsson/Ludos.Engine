@@ -17,9 +17,6 @@
         private const float INITIALACCELERATION = 0.001f;
         private const float DEFAULTDECELERATIONSPEED = 4.5f;
 
-        private LevelManager _levelManager;
-        private InputManager _inputManager;
-
         private Vector2 _startPositon;
         private Vector2 _prevVelocity;
 
@@ -34,13 +31,8 @@
         private float _currentAcceleration = INITIALACCELERATION;
         private float _decelerateSpeed = DEFAULTDECELERATIONSPEED;
 
-        public LudosPlayer(Vector2 position, Point size, GameServiceContainer services)
-            : this(position, size, services.GetService<LevelManager>(), services.GetService<InputManager>())
-        {
-        }
-
-        public LudosPlayer(Vector2 position, Point size, LevelManager levelManager, InputManager inputManager)
-            : base(gravity: 600, position, size, levelManager)
+        public LudosPlayer(Vector2 position, Point size)
+            : base(gravity: 600, position, size)
         {
             UseDefaultGravity = false;
             Position = position;
@@ -48,8 +40,6 @@
             Speed = new Vector2(11, Bounds.Size.Height > 16 ? 225 : 200);
 
             Velocity = new Vector2(0, 0);
-            _levelManager = levelManager;
-            _inputManager = inputManager;
             _startPositon = position;
         }
 
@@ -101,7 +91,7 @@
             {
                 GetAbility<GrabAndThrow>().Update(elapsedTime, this);
 
-                if (_inputManager.IsInputDown(InputName.ActionButton2))
+                if (InputManager.IsInputDown(InputName.ActionButton2))
                 {
                     GetAbility<GrabAndThrow>().Throw(throwingActor: this);
                 }
@@ -110,19 +100,19 @@
             _prevVelocity = Velocity;
         }
 
-        public override void OnGameObjectCollision(object sender, System.EventArgs e)
+        public override void OnGameObjectIsColliding(object sender, System.EventArgs e)
         {
             var collisionObject = sender as GameObject;
 
             if (AbilityIsActive<GrabAndThrow>() && collisionObject?.IsGrabbable == true)
             {
-                if (_inputManager.IsInputDown(InputName.ActionButton2))
+                if (InputManager.IsInputDown(InputName.ActionButton2))
                 {
                     GetAbility<GrabAndThrow>().TryToGrab(collisionObject);
                 }
             }
 
-            base.OnGameObjectCollision(sender, e);
+            base.OnGameObjectIsColliding(sender, e);
         }
 
         private void AdjustVelocityOnPreviousCollision()
@@ -207,7 +197,7 @@
                 }
             }
 
-            var ladders = _levelManager.GetObjectsInRegion(TMXDefaultLayerInfo.ObjectLayerInteractableObjects, ladderDetectionBounds).Where(x => x.Type == "ladder");
+            var ladders = LevelManager.GetObjectsInRegion(TMXDefaultLayerInfo.ObjectLayerInteractableObjects, ladderDetectionBounds).Where(x => x.Type == "ladder");
             _ladderIsAvailable = ladders.Any();
 
             if (!_ladderIsAvailable)
@@ -237,7 +227,7 @@
                 return;
             }
 
-            var water = _levelManager.GetObjectsInRegion(TMXDefaultLayerInfo.ObjectLayerWater, Bounds);
+            var water = LevelManager.GetObjectsInRegion(TMXDefaultLayerInfo.ObjectLayerWater, Bounds);
             var velocityRef = Velocity;
 
             GetAbility<Swimming>().Update(
@@ -247,7 +237,7 @@
                 _jumpInitiated,
                 water,
                 elapsedTime,
-                _inputManager.IsInputDown(InputName.MoveDown));
+                InputManager.IsInputDown(InputName.MoveDown));
 
             Velocity = velocityRef;
         }
@@ -256,7 +246,7 @@
         {
             _onMovingPlatform = false;
 
-            foreach (var mp in _levelManager.MovingPlatforms)
+            foreach (var mp in LevelManager.MovingPlatforms)
             {
                 var platformBounds = mp.Bounds;
 
@@ -284,7 +274,7 @@
                 }
             }
 
-            _onMovingPlatform = _levelManager.MovingPlatforms.Any(x => x.Passenger != null);
+            _onMovingPlatform = LevelManager.MovingPlatforms.Any(x => x.Passenger != null);
 
             if (_onMovingPlatform)
             {
@@ -335,11 +325,11 @@
 
         private Vector2 GetDirection()
         {
-            var movingLeft = _inputManager.IsInputDown(InputName.MoveLeft) ? -Speed.X * _currentAcceleration : 0;
-            var movingRight = _inputManager.IsInputDown(InputName.MoveRight) ? -Speed.X * _currentAcceleration : 0;
+            var movingLeft = InputManager.IsInputDown(InputName.MoveLeft) ? -Speed.X * _currentAcceleration : 0;
+            var movingRight = InputManager.IsInputDown(InputName.MoveRight) ? -Speed.X * _currentAcceleration : 0;
 
-            var climbingUp = _inputManager.IsInputDown(InputName.MoveUp) && _ladderIsAvailable ? -Speed.X : 0;
-            var climbingDown = _inputManager.IsInputDown(InputName.MoveDown) && _ladderIsAvailable ? -Speed.X : 0;
+            var climbingUp = InputManager.IsInputDown(InputName.MoveUp) && _ladderIsAvailable ? -Speed.X : 0;
+            var climbingDown = InputManager.IsInputDown(InputName.MoveDown) && _ladderIsAvailable ? -Speed.X : 0;
 
             var jumpIsAvailableFromPlatform = OnGround || OnLadder || _onMovingPlatform || (AbilityIsActive<WallJump>() && GetAbility<WallJump>().IsWallClinging);
             var jumpIsAvailableFromWater = AbilityIsActive<Swimming>() && GetAbility<Swimming>().IsInWater && !GetAbility<Swimming>().IsSubmerged;
@@ -373,13 +363,13 @@
         {
             var jumpAvailable = false;
 
-            if (_inputManager.IsInputDown(InputName.Jump) && !_jumpButtonPressedDown)
+            if (InputManager.IsInputDown(InputName.Jump) && !_jumpButtonPressedDown)
             {
                 _jumpButtonPressedDown = true;
                 jumpAvailable = true;
             }
 
-            if (_inputManager.IsInputUp(InputName.Jump))
+            if (InputManager.IsInputUp(InputName.Jump))
             {
                 _jumpButtonPressedDown = false;
             }

@@ -11,8 +11,8 @@
     {
         private Direction _previousDirection;
 
-        public Actor(float gravity, Vector2 position, Point size, LevelManager levelManager)
-            : base(gravity, position, size, levelManager)
+        public Actor(float gravity, Vector2 position, Point size)
+            : base(gravity, position, size)
         {
         }
 

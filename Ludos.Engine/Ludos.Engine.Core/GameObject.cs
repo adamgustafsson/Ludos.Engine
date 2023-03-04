@@ -17,18 +17,22 @@
         private Vector2 _velocity;
         private RectangleF _lastPosition;
         private CollisionInformation _collisionInfo;
-        private LevelManager _levelManager;
 
-        public GameObject(float gravity, Vector2 position, Point size, LevelManager levelManager)
+        public GameObject(float gravity, Vector2 position, Point size, params CollisionLayers[] collidingLayers)
+            : this(gravity, position, size)
         {
+            CollidingLayers.AddRange(collidingLayers);
+        }
+
+        public GameObject(float gravity, Vector2 position, Point size)
+        {
+            Id = Guid.NewGuid();
             Gravity = gravity;
             Position = position;
             Size = size;
 
             _collisionInfo = default;
-            _levelManager = levelManager;
-
-            OnCollision += OnGameObjectCollision;
+            OnCollision += OnGameObjectIsColliding;
         }
 
         public event EventHandler OnCollision;
@@ -40,6 +44,7 @@
             ObjectsAndItems,
         }
 
+        public Guid Id { get; set; }
         public bool IsActive { get; set; } = true;
         public bool IsGrabbable { get; set; } = false;
         public bool IsThrowable { get; set; } = false;
@@ -98,7 +103,7 @@
         public virtual void CalculateTileCollision()
         {
             _collisionInfo = default;
-            var collisionRects = _levelManager.GetObjectsInRegion(TMXDefaultLayerInfo.ObjectLayerWorld, _bounds.Round()).Where(x => x.Type != "platform").Select(x => x.Bounds).ToList();
+            var collisionRects = LevelManager.GetObjectsInRegion(TMXDefaultLayerInfo.ObjectLayerWorld, _bounds.Round()).Where(x => x.Type != "platform").Select(x => x.Bounds).ToList();
 
             if (AdditionalCollisionObjects != null)
             {
@@ -164,7 +169,7 @@
             {
                 var colDetectionRect = _bounds;
                 colDetectionRect.Inflate(0.2f, 0.2f);
-                var collisionRectsInflateOne = _levelManager.GetObjectsInRegion(TMXDefaultLayerInfo.ObjectLayerWorld, colDetectionRect).Where(x => x.Type != "platform").Select(x => x.Bounds).ToList();
+                var collisionRectsInflateOne = LevelManager.GetObjectsInRegion(TMXDefaultLayerInfo.ObjectLayerWorld, colDetectionRect).Where(x => x.Type != "platform").Select(x => x.Bounds).ToList();
 
                 if (AdditionalCollisionObjects != null)
                 {
@@ -216,7 +221,7 @@
             OnCollision?.Invoke(gameObject, new EventArgs());
         }
 
-        public virtual void OnGameObjectCollision(object sender, EventArgs e)
+        public virtual void OnGameObjectIsColliding(object sender, EventArgs e)
         {
             var collisionObject = sender as GameObject;
         }

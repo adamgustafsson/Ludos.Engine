@@ -6,30 +6,30 @@
     using Microsoft.Xna.Framework.Input;
     using Size = System.Drawing.Size;
 
-    public class InputManager
+    public static class InputManager
     {
-        private KeyboardState _keyboardState;
-        private KeyboardState _prevKeyboardState;
+        private static KeyboardState _keyboardState;
+        private static KeyboardState _prevKeyboardState;
 
-        private GamePadState _gamepadState;
-        private GamePadState _prevGamepadState;
-        private bool _gamepadIsConnected;
+        private static GamePadState _gamepadState;
+        private static GamePadState _prevGamepadState;
+        private static bool _gamepadIsConnected;
 
-        private MouseState _mouseState;
-        private MouseState _prevMoseState;
+        private static MouseState _mouseState;
+        private static MouseState _prevMoseState;
 
-        private Size _defaultPreferredBackBuffer;
-        private Rectangle _clientBounds;
+        private static Size _defaultPreferredBackBuffer;
+        private static Rectangle _clientBounds;
 
-        public InputManager(Size defaultPreferredBackBuffer)
+        public static Dictionary<string, Input> UserControls { get; set; }
+
+        public static void Init(Size defaultPreferredBackBuffer)
         {
             _defaultPreferredBackBuffer = defaultPreferredBackBuffer;
             _clientBounds = new Rectangle(0, 0, _defaultPreferredBackBuffer.Width, _defaultPreferredBackBuffer.Height);
         }
 
-        public Dictionary<string, Input> UserControls { get; set; }
-
-        public void Update(Rectangle clientBounds)
+        public static void Update(Rectangle clientBounds)
         {
             _prevMoseState = _mouseState;
             _mouseState = Mouse.GetState();
@@ -41,35 +41,35 @@
             _clientBounds = clientBounds;
         }
 
-        public bool IsHovering(Rectangle target, int scale = 1)
+        public static bool IsHovering(Rectangle target, int scale = 1)
         {
             var mousePosition = GetMousePosition();
             return target.Intersects(new Rectangle(mousePosition.X / scale, mousePosition.Y / scale, 1, 1));
         }
 
-        public bool LeftClicked(Rectangle target, int scale = 1)
+        public static bool LeftClicked(Rectangle target, int scale = 1)
         {
             return IsHovering(target, scale) && _prevMoseState.LeftButton == ButtonState.Pressed && _mouseState.LeftButton == ButtonState.Released;
         }
 
-        public KeyboardState GetPreviousKeyboardState()
+        public static KeyboardState GetPreviousKeyboardState()
         {
             return _prevKeyboardState;
         }
 
-        public bool IsInputDown(string inputName)
+        public static bool IsInputDown(string inputName)
         {
             var input = UserControls[inputName];
             return _keyboardState.IsKeyDown(input.Key) || (_gamepadIsConnected && _gamepadState.IsButtonDown(input.Button));
         }
 
-        public bool IsInputUp(string inputName)
+        public static bool IsInputUp(string inputName)
         {
             var input = UserControls[inputName];
             return _keyboardState.IsKeyUp(input.Key) || (_gamepadIsConnected && _gamepadState.IsButtonUp(input.Button));
         }
 
-        private Point GetMousePosition()
+        private static Point GetMousePosition()
         {
             var screenIsRezised = _clientBounds.Width != _defaultPreferredBackBuffer.Width;
 

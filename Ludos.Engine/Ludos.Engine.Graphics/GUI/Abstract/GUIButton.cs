@@ -7,10 +7,9 @@
 
     public abstract class GUIButton : TextureComponent
     {
-        public GUIButton(SpriteFont font, InputManager inputManager)
+        public GUIButton(SpriteFont font)
         {
             Font = font;
-            InputManager = inputManager;
         }
 
         public event EventHandler Click;
@@ -20,7 +19,6 @@
         public Color TextColor { get; set; }
 
         protected SpriteFont Font { get; }
-        protected InputManager InputManager { get; }
         protected bool IsHovering { get; private set; }
 
         public override void Update(GameTime gameTime)
