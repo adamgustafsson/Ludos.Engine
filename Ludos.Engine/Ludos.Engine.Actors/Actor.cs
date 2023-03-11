@@ -27,6 +27,7 @@
             ClimbingIdle = 8,
             Swimming = 9,
             Diving = 10,
+            Throwing = 11,
         }
 
         public enum Direction
@@ -59,13 +60,17 @@
             {
                 CurrentState = GetAbility<Swimming>().IsSubmerged ? State.Diving : State.Swimming;
             }
-            else if (Velocity.Y < 0)
-            {
-                CurrentState = State.Jumping;
-            }
             else if (GetAbility<WallJump>()?.IsWallClinging ?? false)
             {
                 CurrentState = State.WallClinging;
+            }
+            else if (GetAbility<GrabAndThrow>()?.IsThrowing ?? false)
+            {
+                CurrentState = State.Throwing;
+            }
+            else if (Velocity.Y < 0)
+            {
+                CurrentState = State.Jumping;
             }
             else if (Velocity.Y > 0)
             {

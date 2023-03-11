@@ -41,6 +41,7 @@
 
             Velocity = new Vector2(0, 0);
             _startPositon = position;
+            LevelManager.GlobalGameObjects.Add(this);
         }
 
         public float HorizontalAcceleration { get; set; } = 0.15f;
@@ -93,7 +94,7 @@
 
                 if (InputManager.IsInputDown(InputName.ActionButton2))
                 {
-                    GetAbility<GrabAndThrow>().Throw(throwingActor: this);
+                    GetAbility<GrabAndThrow>().InitiateThrow(throwingActor: this);
                 }
             }
 
