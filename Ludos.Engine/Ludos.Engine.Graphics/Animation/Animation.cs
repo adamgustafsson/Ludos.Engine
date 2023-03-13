@@ -42,6 +42,7 @@
             FrameHeight = Texture.Height / sheetFrameCount.Y;
             IsLooping = true;
             Scale = scale;
+            CurrentXFrame = StartFrame.X;
 
             _staticPosition = position;
             _frameSpeed = 0.2f;
