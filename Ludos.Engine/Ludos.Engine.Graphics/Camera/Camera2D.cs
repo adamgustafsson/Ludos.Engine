@@ -9,7 +9,6 @@
 
     public class Camera2D
     {
-        private readonly float _scale;
         private readonly LudosPlayer _player;
         private RectangleF _cameraBounds;
         private RectangleF _movementBounds;
@@ -28,9 +27,8 @@
         public Camera2D(GraphicsDevice graphicsDevice, LudosPlayer player, float cameraScale, Vector2 movementBoundsSizePct)
         {
             _viewPort = graphicsDevice.Viewport;
-            _cameraBounds = new RectangleF(graphicsDevice.Viewport.Bounds.X, graphicsDevice.Viewport.Bounds.Y, graphicsDevice.Viewport.Bounds.Width, graphicsDevice.Viewport.Bounds.Height);
+            _cameraBounds = new RectangleF(graphicsDevice.Viewport.Bounds.X, graphicsDevice.Viewport.Bounds.Y, graphicsDevice.Viewport.Bounds.Width / cameraScale, graphicsDevice.Viewport.Bounds.Height / cameraScale);
             _player = player;
-            _scale = cameraScale;
             _movementBoundsSizePct = movementBoundsSizePct;
             SetMovementBounds();
         }
@@ -110,10 +108,8 @@
                 _movementBounds.X += dir * ((float)gameTime.ElapsedGameTime.TotalSeconds * 2);
             }
 
-            var cameraWidth = _cameraBounds.Width / _scale;
-            var cameraHeight = _cameraBounds.Height / _scale;
-            _cameraBounds.X = _movementBounds.Center().X - (cameraWidth / 2f);
-            _cameraBounds.Y = CameraAxisYLock == null ? (_movementBounds.Center().Y - (cameraHeight / 2f)) : (float)CameraAxisYLock;
+            _cameraBounds.X = _movementBounds.Center().X - (_cameraBounds.Width / 2f);
+            _cameraBounds.Y = CameraAxisYLock == null ? (_movementBounds.Center().Y - (_cameraBounds.Height / 2f)) : (float)CameraAxisYLock;
 
             if (_cameraBounds.X < 0)
             {
@@ -192,7 +188,7 @@
             {
                 case CameraTransitionType.VerticalSlide:
                     _transition.TransitionDestination = _player.Velocity.Y < 0
-                        ? new Vector2(_cameraBounds.X, transitionTriggerBounds.Y - (_cameraBounds.Height / _scale))
+                        ? new Vector2(_cameraBounds.X, transitionTriggerBounds.Y - _cameraBounds.Height)
                         : new Vector2(_cameraBounds.X, transitionTriggerBounds.Y + transitionTriggerBounds.Height);
                     break;
             }
@@ -200,10 +196,8 @@
 
         public void SetMovementBounds()
         {
-            var cameraWidth = _cameraBounds.Width / _scale;
-            var cameraHeight = _cameraBounds.Height / _scale;
-            var movementBoundsWidth = cameraWidth * _movementBoundsSizePct.X;
-            var movementBoundsHeight = cameraHeight * _movementBoundsSizePct.Y;
+            var movementBoundsWidth = _cameraBounds.Width * _movementBoundsSizePct.X;
+            var movementBoundsHeight = _cameraBounds.Height * _movementBoundsSizePct.Y;
 
             _movementBounds = new RectangleF(_player.Bounds.Center().X - (movementBoundsWidth / 2), _player.Bounds.Center().Y - (movementBoundsHeight / 2), movementBoundsWidth, movementBoundsHeight);
         }
