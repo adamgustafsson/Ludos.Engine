@@ -45,6 +45,11 @@
             return new RectangleF(rec.X, rec.Y, rec.Width, rec.Height);
         }
 
+        public static Rectangle ToRectangle(this RectangleF rec)
+        {
+            return new Rectangle(rec.X.ToInt32(), rec.Y.ToInt32(), rec.Width.ToInt32(), rec.Height.ToInt32());
+        }
+
         public static GraphicsDevice GetGraphicsDevice(this ContentManager content)
         {
             return ((IGraphicsDeviceService)content.ServiceProvider.GetService(typeof(IGraphicsDeviceService))).GraphicsDevice;

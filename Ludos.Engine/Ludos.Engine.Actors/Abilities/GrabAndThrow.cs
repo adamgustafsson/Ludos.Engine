@@ -8,39 +8,56 @@
     {
         private float _defaultThrowToGrabDelay = 0.25f;
         private float _defaultGrabToThowDelay = 0.5f;
-        private float _defaultThrowDelay = 0.5f;
+        private float _defaultThrowDuration = 0.5f;
+        private float _thorwStateLinger = 0.10f;
+        private bool _linger;
         private bool _throwInitiated;
         private Actor _throwingActor;
 
         public GrabAndThrow()
         {
             ThrowVelocity = new Vector2(250, -100);
-            ThrowDelay = _defaultThrowDelay;
+            ThrowDuration = _defaultThrowDuration;
             ThrowToGrabDelay = _defaultThrowToGrabDelay;
             GrabToThrowDelay = _defaultGrabToThowDelay;
+            ThorwStateLinger = _thorwStateLinger;
         }
 
-        public GrabAndThrow(float throwToGrabDelay, float grabToThrowDelay, float throwDuration)
+        public GrabAndThrow(float throwToGrabDelay, float grabToThrowDelay, float throwDuration, float throwStateLinger)
         {
             _defaultThrowToGrabDelay = throwToGrabDelay;
             _defaultGrabToThowDelay = grabToThrowDelay;
-            _defaultThrowDelay = throwDuration;
+            _defaultThrowDuration = throwDuration;
+            _thorwStateLinger = throwStateLinger;
             ThrowToGrabDelay = _defaultThrowToGrabDelay;
             GrabToThrowDelay = _defaultGrabToThowDelay;
+            ThorwStateLinger = _thorwStateLinger;
         }
 
         public Vector2 ThrowVelocity { get; set; }
-        public float ThrowDelay { get; set; }
+        public float ThrowDuration { get; set; }
         public float ThrowToGrabDelay { get; set; }
         public float GrabToThrowDelay { get; set; }
+        public float ThorwStateLinger { get; set; }
         public GameObject CurrentGrabbedObject { get; set; }
         public bool AbilityEnabled { get; set; } = true;
         public bool AbilityTemporarilyDisabled { get; set; }
         public bool AllowGrabbingMovingObjects { get; set; }
-        public bool IsThrowing { get => _throwInitiated; }
+        public bool IsThrowing { get => _throwInitiated || _linger; }
 
         public void Update(float elapsedTime, Actor actor)
         {
+            if (_linger)
+            {
+                ThorwStateLinger -= elapsedTime;
+            }
+
+            if (ThorwStateLinger <= 0)
+            {
+                _linger = false;
+                ThorwStateLinger = _thorwStateLinger;
+            }
+
             if (CurrentGrabbedObject != null)
             {
                 CurrentGrabbedObject.Velocity = Vector2.Zero;
@@ -52,13 +69,14 @@
                 ThrowToGrabDelay -= elapsedTime;
             }
 
-            if (_throwInitiated && ThrowDelay <= 0)
+            if (_throwInitiated && ThrowDuration <= 0)
             {
                 Throw();
+                _linger = true;
             }
             else if (_throwInitiated)
             {
-                ThrowDelay -= elapsedTime;
+                ThrowDuration -= elapsedTime;
             }
         }
 
@@ -79,7 +97,7 @@
 
         public void ResetThrowDelay()
         {
-            ThrowDelay = _defaultThrowDelay;
+            ThrowDuration = _defaultThrowDuration;
         }
 
         public void ResetGrabToThrowDelay()
