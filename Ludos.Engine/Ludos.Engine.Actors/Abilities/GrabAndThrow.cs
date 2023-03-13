@@ -61,7 +61,11 @@
             if (CurrentGrabbedObject != null)
             {
                 CurrentGrabbedObject.Velocity = Vector2.Zero;
-                CurrentGrabbedObject.Position = actor.CurrentDirection == Direction.Left ? actor.Position + new Vector2(7, -2) : actor.Position + new Vector2(-7, -2);
+
+                // As default the grabbed object will be placed 1/3 of its width inwards and 1/3 of its height upwards in regards to the players bounds.
+                var directionLeftPosition = new Vector2(actor.Position.X + actor.Size.X - (CurrentGrabbedObject.Size.X / 3), actor.Position.Y - (CurrentGrabbedObject.Size.Y / 3));
+                var directionRightPosition = new Vector2(actor.Position.X - CurrentGrabbedObject.Size.X + (CurrentGrabbedObject.Size.X / 3), actor.Position.Y - (CurrentGrabbedObject.Size.Y / 3));
+                CurrentGrabbedObject.Position = actor.CurrentDirection == Direction.Left ? directionLeftPosition : directionRightPosition;
                 GrabToThrowDelay -= elapsedTime;
             }
             else
