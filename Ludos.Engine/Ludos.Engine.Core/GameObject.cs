@@ -52,7 +52,7 @@
         public bool IsStationary { get; set; } = false;
         public bool UseDefaultGravity { get; set; } = true;
         public virtual RectangleF Bounds { get => _bounds; }
-        public virtual Point Size { set => _bounds.Size = new SizeF(value.X, value.Y); }
+        public virtual Point Size { get => new(_bounds.Size.Width.ToInt32(), _bounds.Size.Height.ToInt32()); set => _bounds.Size = new SizeF(value.X, value.Y); }
         public virtual Vector2 Position { get => new Vector2(_bounds.X, _bounds.Y); set => _bounds.Location = new PointF(value.X, value.Y); }
         public virtual Vector2 Velocity { get => _velocity; set => _velocity = value; }
         public virtual float Gravity { get; set; }

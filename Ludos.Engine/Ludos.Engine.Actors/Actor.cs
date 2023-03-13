@@ -18,16 +18,20 @@
 
         public enum State
         {
-            Jumping = 0,
-            Falling = 1,
-            Idle = 3,
-            WallClinging = 4,
-            Running = 5,
-            Climbing = 6,
-            ClimbingIdle = 8,
-            Swimming = 9,
-            Diving = 10,
-            Throwing = 11,
+            Jumping,
+            JumpingAndCarrying,
+            Falling,
+            FallingAndCarrying,
+            Idle,
+            IdleAndCarrying,
+            WallClinging,
+            Running,
+            RunningAndCarrying,
+            Climbing,
+            ClimbingIdle,
+            Swimming,
+            Diving,
+            Throwing,
         }
 
         public enum Direction
@@ -47,6 +51,7 @@
         public void SetState()
         {
             PreviousState = CurrentState;
+            var isCarryingObject = GetAbility<GrabAndThrow>()?.CurrentGrabbedObject != null;
 
             if (Velocity.Y != 0 && OnLadder)
             {
@@ -70,19 +75,19 @@
             }
             else if (Velocity.Y < 0)
             {
-                CurrentState = State.Jumping;
+                CurrentState = isCarryingObject ? State.JumpingAndCarrying : State.Jumping;
             }
             else if (Velocity.Y > 0)
             {
-                CurrentState = State.Falling;
+                CurrentState = isCarryingObject ? State.FallingAndCarrying : State.Falling;
             }
             else if (Velocity.X != 0)
             {
-                CurrentState = State.Running;
+                CurrentState = isCarryingObject ? State.RunningAndCarrying : State.Running;
             }
             else
             {
-                CurrentState = State.Idle;
+                CurrentState = isCarryingObject ? State.IdleAndCarrying : State.Idle;
             }
         }
 
