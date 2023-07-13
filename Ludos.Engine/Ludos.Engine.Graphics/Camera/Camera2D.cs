@@ -1,6 +1,9 @@
 ﻿namespace Ludos.Engine.Graphics
 {
+    using System.Collections.Generic;
+    using FuncWorks.XNA.XTiled;
     using Ludos.Engine.Actors;
+    using Ludos.Engine.Level;
     using Ludos.Engine.Utilities;
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
@@ -18,6 +21,7 @@
         private Vector2 _movementBoundsSizePct;
         private CameraTransition _transition;
         private bool _autoCenteringIsActive = true;
+        private IEnumerable<MapObject> _cameraInteractions;
 
         public Camera2D(GraphicsDevice graphicsDevice, LudosPlayer player, float cameraScale)
         : this(graphicsDevice, player, cameraScale, new Vector2(0.15f, 0.75f))
@@ -30,6 +34,7 @@
             _cameraBounds = new RectangleF(graphicsDevice.Viewport.Bounds.X, graphicsDevice.Viewport.Bounds.Y, graphicsDevice.Viewport.Bounds.Width / cameraScale, graphicsDevice.Viewport.Bounds.Height / cameraScale);
             _player = player;
             _movementBoundsSizePct = movementBoundsSizePct;
+            _cameraInteractions = LevelManager.GetAllLayerObjects(TMXDefaultLayerInfo.ObjectLayerCamera);
             SetMovementBounds();
         }
 
@@ -37,13 +42,35 @@
         public float MovementBoundsHeight { get => _movementBounds.Height; set => _movementBounds.Height = value; }
         public float MovementBoundsWidth { get => _movementBounds.Width; set => _movementBounds.Width = value; }
         public RectangleF MovementBounds { get => _movementBounds; set => _movementBounds = value; }
-        public float? CameraAxisYLock { get; set; } = null;
-        public float? CameraAxisXLock { get; set; } = null;
+        public float? CurrentMinXLimit { get; set; }
+        public float? CurrentMaxXLimit { get; set; }
+        public float? CurrentMinYLimit { get; set; }
+        public float? CurrentMaxYLimit { get; set; }
+        public float? CurrentAxisLockY { get; set; }
+        public float? CurrentAxisLockX { get; set; }
         public CameraTransition Transition { get => _transition; set => _transition = value; }
-
         public Vector2 Velocity { get => _velocity; set => _velocity = value; }
         public void Update(GameTime gameTime)
         {
+            foreach (var t in _cameraInteractions)
+            {
+                if (t.Type == TMXDefaultTypes.CameraTransitions && _player.Bounds.IntersectsWith(t.Bounds.ToRectangleF()))
+                {
+                    if (!_transition.TransitionInProgress)
+                    {
+                        InitiateCameraTransition(CameraTransitionType.VerticalSlide, t.Bounds);
+                    }
+                }
+
+                if (t.Type == TMXDefaultTypes.CameraMinXLimit && _cameraBounds.IntersectsWith(t.Bounds.ToRectangleF()))
+                {
+                    if (CurrentMinXLimit != t.Bounds.X)
+                    {
+                        CurrentMinXLimit = t.Bounds.X;
+                    }
+                }
+            }
+
             if (_transition.TransitionInProgress)
             {
                 _autoCenteringIsActive = false;
@@ -74,9 +101,9 @@
                 _transition = default;
                 _player.IsActive = true;
 
-                if (CameraAxisYLock != null)
+                if (CurrentAxisLockY != null)
                 {
-                    CameraAxisYLock = _cameraBounds.Y;
+                    CurrentAxisLockY = _cameraBounds.Y;
                 }
 
                 return;
@@ -109,7 +136,7 @@
             }
 
             _cameraBounds.X = _movementBounds.Center().X - (_cameraBounds.Width / 2f);
-            _cameraBounds.Y = CameraAxisYLock == null ? (_movementBounds.Center().Y - (_cameraBounds.Height / 2f)) : (float)CameraAxisYLock;
+            _cameraBounds.Y = CurrentAxisLockY == null ? (_movementBounds.Center().Y - (_cameraBounds.Height / 2f)) : (float)CurrentAxisLockY;
 
             if (_cameraBounds.X < 0)
             {
@@ -119,6 +146,15 @@
             if (_cameraBounds.Y < 0)
             {
                 _cameraBounds.Y = 0;
+            }
+
+            if (CurrentMinXLimit != null && _cameraBounds.X <= CurrentMinXLimit)
+            {
+                _cameraBounds.X = (float)CurrentMinXLimit;
+            }
+            else if (CurrentMaxXLimit != null && _cameraBounds.X >= CurrentMaxXLimit)
+            {
+                _cameraBounds.X = (float)CurrentMaxXLimit;
             }
 
             _velocity = new Vector2((_cameraBounds.X - _lastPosition.X) / (float)gameTime.ElapsedGameTime.TotalSeconds, (_cameraBounds.Y - _lastPosition.Y) / (float)gameTime.ElapsedGameTime.TotalSeconds);
