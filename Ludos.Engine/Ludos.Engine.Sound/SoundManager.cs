@@ -24,8 +24,8 @@
             LoadContent(content, soundInfo);
         }
 
-        public bool SoundEnabled { get; set; }
-        public bool MusicEnabled { get; set; }
+        public bool SoundEnabled { get; set; } = true;
+        public bool MusicEnabled { get; set; } = true;
 
         public void LoadContent(ContentManager content, SoundInfo soundInfo)
         {
