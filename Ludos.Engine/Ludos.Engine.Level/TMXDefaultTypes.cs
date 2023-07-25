@@ -10,5 +10,6 @@
         public static string CameraMaxXLimit { get; set; } = "camera-max-x-limit";
         public static string CameraMinYLimit { get; set; } = "camera-min-y-limit";
         public static string CameraMaxYLimit { get; set; } = "camera-max-y-limit";
+        public static string PlayerStratPosition { get; set; } = "player-start";
     }
 }

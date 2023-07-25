@@ -77,6 +77,12 @@
             }
         }
 
+        public static Vector2 GetPlayerStartPosition()
+        {
+            var playerStartObject = GetAllLayerObjects(TMXDefaultLayerInfo.ObjectLayerCamera).Where(x => x.Type == TMXDefaultTypes.PlayerStratPosition).FirstOrDefault();
+            return playerStartObject == null ? Vector2.Zero : playerStartObject.Bounds.Location.ToVector2();
+        }
+
         public static int GetLayerIndex(string layerName)
         {
             return _layerIndexInfo[layerName];
