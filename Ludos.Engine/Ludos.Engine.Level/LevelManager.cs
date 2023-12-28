@@ -21,7 +21,7 @@
         private static Map _currentMap;
 
         public static string CurrentMapName { get => System.IO.Path.GetFileName(_mapsInfo[_currentLevelIndex].TmxFilePath).Replace(".tmx", string.Empty); }
-        public static List<MovingPlatform> MovingPlatforms { get; private set; }
+        public static List<MovingPlatform> MovingPlatforms { get; private set; } = new();
         public static List<GameObject> GlobalGameObjects { get; set; } = new();
 
         public static void Init(ContentManager content, List<TMXMapInfo> mapsInfo)
