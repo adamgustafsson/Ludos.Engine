@@ -12,7 +12,7 @@
 
     public class Camera2D
     {
-        private readonly LudosPlayer _player;
+        private readonly Actor _player;
         private RectangleF _cameraBounds;
         private RectangleF _movementBounds;
         private Viewport _viewPort;

@@ -44,10 +44,6 @@
             LevelManager.GlobalGameObjects.Add(this);
         }
 
-        public float HorizontalAcceleration { get; set; } = 0.15f;
-        public bool DecelerationIsActive { get; set; } = true;
-        public bool IsDecelerating { get; set; }
-
         public void ResetToStartPosition()
         {
             Position = _startPositon;

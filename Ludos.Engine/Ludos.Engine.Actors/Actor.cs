@@ -46,6 +46,9 @@
         public State PreviousState { get; private set; }
         public Direction CurrentDirection { get; private set; } = Direction.Right;
         public List<IAbility> Abilities { get; set; } = new List<IAbility>();
+        public float HorizontalAcceleration { get; set; } = 0.15f;
+        public bool DecelerationIsActive { get; set; } = true;
+        public bool IsDecelerating { get; set; }
         protected bool OnLadder { get; set; }
 
         public void SetState()
